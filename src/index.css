@@ -1,14 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563eb;
-  --color-secondary: #475569;
-  --color-background: #f8fafc;
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.25);
+  --color-primary: #ffffff;
+  --color-primary-foreground: #000000;
+  --color-muted: #a1a1aa; /* zinc-400 */
 }
 
 body {
   background-color: var(--color-background);
-  color: #0f172a; /* equivalent to text-slate-900 */
+  color: var(--color-primary);
   font-family: ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* This makes the scrollbar dark on supported browsers */
+  color-scheme: dark; 
 }

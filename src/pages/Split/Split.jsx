@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  SplitSquareHorizontal,
-  X,
-  Download,
-  Loader2,
-} from "lucide-react";
+import { SplitSquareHorizontal, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { splitPdf, getPdfPageCount } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
@@ -30,14 +25,11 @@ export function Split() {
       setIsProcessing(true);
       setError(null);
       const count = await getPdfPageCount(selectedFile);
-
       setFile(selectedFile);
       setTotalPages(count);
       setRange({ start: 1, end: count }); 
     } catch (err) {
-      setError(
-        "Could not read the PDF file. It might be corrupted or encrypted."
-      );
+      setError("Could not read the PDF file. It might be corrupted or encrypted.");
     } finally {
       setIsProcessing(false);
     }
@@ -52,24 +44,16 @@ export function Split() {
 
   const handleSplit = async () => {
     if (!file) return;
-
     try {
       setIsProcessing(true);
       setError(null);
-
-      const splitBlob = await splitPdf(
-        file,
-        parseInt(range.start),
-        parseInt(range.end)
-      );
-
+      const splitBlob = await splitPdf(file, parseInt(range.start), parseInt(range.end));
       const url = URL.createObjectURL(splitBlob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `QuickPDF_Extracted_p${range.start}-${range.end}.pdf`;
       document.body.appendChild(link);
       link.click();
-
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -82,21 +66,20 @@ export function Split() {
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
       <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-primary mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <SplitSquareHorizontal className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
+        <h1 className="text-4xl font-extrabold text-white mb-4">
           Split PDF
         </h1>
-        <p className="text-lg text-slate-600">
-          Extract a specific range of pages from your PDF securely in your
-          browser.
+        <p className="text-lg text-zinc-400">
+          Extract a specific range of pages from your PDF securely in your browser.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100">
+          <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
             {error}
           </div>
         )}
@@ -110,18 +93,18 @@ export function Split() {
           />
         ) : (
           <div className="space-y-8">
-            <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-white/10 rounded-xl">
               <div className="flex flex-col overflow-hidden mr-4">
-                <span className="font-medium text-slate-900 truncate">
+                <span className="font-medium text-zinc-200 truncate">
                   {file.name}
                 </span>
-                <span className="text-sm text-slate-500 mt-0.5">
+                <span className="text-sm text-zinc-500 mt-0.5">
                   {totalPages} pages total • {formatFileSize(file.size)}
                 </span>
               </div>
               <button
                 onClick={clearFile}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-red-100 shadow-sm"
+                className="p-2 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors border border-transparent"
                 title="Remove file"
               >
                 <X className="w-5 h-5" />
@@ -130,7 +113,7 @@ export function Split() {
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-zinc-400">
                   Start Page
                 </label>
                 <input
@@ -138,14 +121,12 @@ export function Split() {
                   min="1"
                   max={range.end}
                   value={range.start}
-                  onChange={(e) =>
-                    setRange({ ...range, start: e.target.value })
-                  }
-                  className="w-full h-11 px-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  onChange={(e) => setRange({ ...range, start: e.target.value })}
+                  className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-white/20 focus:border-white/30 outline-none transition-all"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-zinc-400">
                   End Page
                 </label>
                 <input
@@ -154,12 +135,12 @@ export function Split() {
                   max={totalPages}
                   value={range.end}
                   onChange={(e) => setRange({ ...range, end: e.target.value })}
-                  className="w-full h-11 px-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-white/20 focus:border-white/30 outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end border-t border-slate-100 pt-6">
+            <div className="flex justify-end border-t border-white/10 pt-6">
               <Button
                 onClick={handleSplit}
                 disabled={

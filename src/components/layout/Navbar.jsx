@@ -4,25 +4,25 @@ import { FileText } from 'lucide-react';
 
 export function Navbar() {
   return (
-    <nav className="border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
+    <nav className="border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2">
-            <FileText className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl tracking-tight text-slate-900">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="bg-white text-black p-1.5 rounded-md group-hover:scale-105 transition-transform">
+              <FileText className="h-5 w-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-white">
               QuickPDF
             </span>
           </Link>
 
-          {/* Navigation Links */}
           <div className="flex gap-6">
-            <Link to="/merge" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
-              Merge PDF
+            <Link to="/merge" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Merge
             </Link>
-            <Link to="/split" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
-              Split PDF
+            <Link to="/split" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Split
             </Link>
           </div>
 
