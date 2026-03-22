@@ -2,7 +2,12 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { PageContainer } from './components/layout/PageContainer';
-import { Home } from './pages/Home/Home'; // Add this import
+
+
+// pages
+import { Home } from './pages/Home/Home'; 
+import { Merge } from './pages/Merge/Merge';
+
 
 function App() {
   return (
@@ -13,7 +18,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
 
-          <Route path="/merge" element={<h2 className="text-2xl font-bold">Merge Page Coming Soon</h2>} />
+          <Route path="/merge" element={<Merge />} />
           <Route path="/split" element={<h2 className="text-2xl font-bold">Split Page Coming Soon</h2>} />
         </Routes>
       </PageContainer>
