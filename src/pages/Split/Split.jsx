@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import {
   SplitSquareHorizontal,
-  FileUp,
   X,
   Download,
   Loader2,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { splitPdf, getPdfPageCount } from "../../services/pdf.service";
+import { Dropzone } from "../../components/pdf/Dropzone";
+import { formatFileSize } from "../../utils/formatters";
 
 export function Split() {
   const [file, setFile] = useState(null);
@@ -16,8 +17,8 @@ export function Split() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files?.[0];
+  const handleFileSelected = async (selectedFiles) => {
+    const selectedFile = selectedFiles[0];
     if (!selectedFile) return;
 
     if (selectedFile.type !== "application/pdf") {
@@ -28,15 +29,14 @@ export function Split() {
     try {
       setIsProcessing(true);
       setError(null);
-      // Get page count immediately so user knows their bounds
       const count = await getPdfPageCount(selectedFile);
 
       setFile(selectedFile);
       setTotalPages(count);
-      setRange({ start: 1, end: count }); // Default range is the whole document
+      setRange({ start: 1, end: count }); 
     } catch (err) {
       setError(
-        "Could not read the PDF file. It might be corrupted or encrypted.",
+        "Could not read the PDF file. It might be corrupted or encrypted."
       );
     } finally {
       setIsProcessing(false);
@@ -60,7 +60,7 @@ export function Split() {
       const splitBlob = await splitPdf(
         file,
         parseInt(range.start),
-        parseInt(range.end),
+        parseInt(range.end)
       );
 
       const url = URL.createObjectURL(splitBlob);
@@ -102,40 +102,26 @@ export function Split() {
         )}
 
         {!file ? (
-          // Upload State
-          <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <FileUp className="w-12 h-12 text-slate-400 mb-4" />
-              <p className="mb-2 text-base text-slate-600">
-                <span className="font-semibold text-primary">
-                  Click to upload
-                </span>{" "}
-                a PDF to split
-              </p>
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              accept=".pdf,application/pdf"
-              onChange={handleFileChange}
-              disabled={isProcessing}
-            />
-          </label>
+          <Dropzone 
+            onFilesSelected={handleFileSelected} 
+            multiple={false} 
+            disabled={isProcessing} 
+            text="Click to upload a PDF" 
+          />
         ) : (
-          // Configuration State
           <div className="space-y-8">
             <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <div className="flex flex-col overflow-hidden mr-4">
                 <span className="font-medium text-slate-900 truncate">
                   {file.name}
                 </span>
-                <span className="text-sm text-slate-500">
-                  {totalPages} pages total
+                <span className="text-sm text-slate-500 mt-0.5">
+                  {totalPages} pages total • {formatFileSize(file.size)}
                 </span>
               </div>
               <button
                 onClick={clearFile}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-red-100 shadow-sm"
                 title="Remove file"
               >
                 <X className="w-5 h-5" />

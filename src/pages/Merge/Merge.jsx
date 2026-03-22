@@ -1,39 +1,37 @@
 import React, { useState } from "react";
-import { Layers, FilePlus, X, Download, Loader2, Trash2 } from "lucide-react";
+import { Layers, X, Download, Loader2, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { mergePdfs } from "../../services/pdf.service";
+import { Dropzone } from "../../components/pdf/Dropzone";
+import { formatFileSize } from "../../utils/formatters";
 
 export function Merge() {
   const [files, setFiles] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
-  // Handle native file input selection
-  const handleFileChange = (e) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      const validPdfs = selectedFiles.filter(
-        (file) => file.type === "application/pdf",
-      );
+  const handleFilesSelected = (selectedFiles) => {
+    const validPdfs = selectedFiles.filter(
+      (file) => file.type === "application/pdf"
+    );
 
-      if (validPdfs.length !== selectedFiles.length) {
-        setError("Some files were ignored. Only PDF files are allowed.");
-      } else {
-        setError(null);
-      }
-
-      setFiles((prev) => [...prev, ...validPdfs]);
+    if (validPdfs.length !== selectedFiles.length) {
+      setError("Some files were ignored. Only PDF files are allowed.");
+    } else {
+      setError(null);
     }
+
+    setFiles((prev) => [...prev, ...validPdfs]);
   };
 
   const removeFile = (indexToRemove) => {
     setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const clearAllFiles = () =>{
+  const clearAllFiles = () => {
     setFiles([]);
     setError(null);
-  }
+  };
 
   const handleMerge = async () => {
     if (files.length < 2) return;
@@ -42,10 +40,8 @@ export function Merge() {
       setIsProcessing(true);
       setError(null);
 
-      // Call our abstracted service
       const mergedPdfBlob = await mergePdfs(files);
 
-      // Create a temporary download link in the browser
       const url = URL.createObjectURL(mergedPdfBlob);
       const link = document.createElement("a");
       link.href = url;
@@ -53,7 +49,6 @@ export function Merge() {
       document.body.appendChild(link);
       link.click();
 
-      // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -85,28 +80,16 @@ export function Merge() {
         )}
 
         <div className="mb-8">
-          <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <FilePlus className="w-10 h-10 text-slate-400 mb-3" />
-              <p className="mb-2 text-sm text-slate-600">
-                <span className="font-semibold text-primary">Click to upload</span> or drag and drop
-              </p>
-              <p className="text-xs text-slate-500">Only PDF files are supported</p>
-            </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              multiple 
-              accept=".pdf,application/pdf" 
-              onChange={handleFileChange}
-              disabled={isProcessing}
-            />
-          </label>
+          <Dropzone 
+            onFilesSelected={handleFilesSelected} 
+            multiple={true} 
+            disabled={isProcessing} 
+            text="Click to upload" 
+          />
         </div>
 
         {files.length > 0 && (
           <div className="mb-8 space-y-3">
-            {/* UPDATED: Clear All is now grouped with the header */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-slate-900">Selected Files ({files.length})</h3>
               <button 
@@ -121,15 +104,19 @@ export function Merge() {
             
             <ul className="space-y-2">
               {files.map((file, index) => (
-                <li key={`${file.name}-${index}`} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                  <span className="text-sm text-slate-700 truncate mr-4">{file.name}</span>
+                <li key={`${file.name}-${index}`} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg group hover:bg-slate-100 transition-colors">
+                  <div className="flex flex-col overflow-hidden mr-4">
+                    <span className="text-sm font-medium text-slate-700 truncate">{file.name}</span>
+                    {/* UPDATED: Showing the actual formatted file size for better UX */}
+                    <span className="text-xs text-slate-500 mt-0.5">{formatFileSize(file.size)}</span>
+                  </div>
                   <button 
                     onClick={() => removeFile(index)}
                     disabled={isProcessing}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-md transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                     title="Remove file"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </li>
               ))}
@@ -137,7 +124,6 @@ export function Merge() {
           </div>
         )}
 
-        {/* UPDATED: Bottom action area is now just the primary Merge button */}
         <div className="flex justify-end mt-8 border-t border-slate-100 pt-6">
           <Button 
             onClick={handleMerge} 
