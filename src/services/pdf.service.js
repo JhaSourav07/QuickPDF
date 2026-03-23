@@ -179,3 +179,19 @@ export const compressWithQuality = async (file, quality = 0.5) => {
   return new Blob([compressedBytes], { type: 'application/pdf' });
 };
 
+// Rotate all pages in a PDF
+export const rotatePdf = async (file, rotationAngle) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc = await PDFDocument.load(arrayBuffer);
+  const pages = pdfDoc.getPages();
+
+  pages.forEach((page) => {
+    // Get the current rotation of the page (in case it's already rotated)
+    const currentRotation = page.getRotation().angle;
+    // Add the new rotation to the existing one
+    page.setRotation(degrees(currentRotation + rotationAngle));
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  return new Blob([pdfBytes], { type: 'application/pdf' });
+};
