@@ -1,10 +1,5 @@
-import {
-  PDFDocument,
-  rgb,
-  degrees,
-  StandardFonts,
-} from "pdf-lib";
-import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument, rgb, degrees, StandardFonts } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist";
 
 // merging multiple PDFs into one
 export const mergePdfs = async (files) => {
@@ -151,32 +146,39 @@ export const imageToPdf = async (files) => {
   return new Blob([pdfBytes], { type: "application/pdf" });
 };
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Vite resolves this at build time from node_modules — no CDN dependency
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 export const compressWithQuality = async (file, quality = 0.5) => {
   const arrayBuffer = await file.arrayBuffer();
-  
+
   // Load the document with 'ignoreEncryption' to bypass permission locks
-  const pdfDoc = await PDFDocument.load(arrayBuffer, { 
+  const pdfDoc = await PDFDocument.load(arrayBuffer, {
     ignoreEncryption: true,
     // Using a smaller byte range helps prevent browser hangs on 100MB+ files
-    capNumbers: true 
+    capNumbers: true,
   });
-  
+
   // Create a brand new document to force a complete re-index of the data
   const compressedDoc = await PDFDocument.create();
-  const copiedPages = await compressedDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
-  copiedPages.forEach(page => compressedDoc.addPage(page));
+  const copiedPages = await compressedDoc.copyPages(
+    pdfDoc,
+    pdfDoc.getPageIndices(),
+  );
+  copiedPages.forEach((page) => compressedDoc.addPage(page));
 
-  // The 'useObjectStreams' flag is the secret for large files. 
+  // The 'useObjectStreams' flag is the secret for large files.
   // It zips thousands of tiny PDF objects into a few large binary chunks.
   const compressedBytes = await compressedDoc.save({
     useObjectStreams: true,
     addDefaultPage: false,
-    updateFieldAppearances: false
+    updateFieldAppearances: false,
   });
 
-  return new Blob([compressedBytes], { type: 'application/pdf' });
+  return new Blob([compressedBytes], { type: "application/pdf" });
 };
 
 // Rotate all pages in a PDF
@@ -193,5 +195,57 @@ export const rotatePdf = async (file, rotationAngle) => {
   });
 
   const pdfBytes = await pdfDoc.save();
-  return new Blob([pdfBytes], { type: 'application/pdf' });
+  return new Blob([pdfBytes], { type: "application/pdf" });
+};
+
+export const getPdfThumbnails = async (file) => {
+  if (!file) throw new Error("No file provided.");
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  // pdfjsLib.GlobalWorkerOptions.workerSrc is already set earlier in the file.
+  const pdfJsDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const totalPages = pdfJsDoc.numPages;
+  const thumbnails = [];
+
+  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+    const page = await pdfJsDoc.getPage(pageNum);
+    const SCALE = 0.3;
+    const viewport = page.getViewport({ scale: SCALE });
+
+    // Render into an offscreen canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({
+      canvasContext: canvas.getContext("2d"),
+      viewport,
+    }).promise;
+
+    thumbnails.push({
+      // Stable unique id so Framer Motion can track items correctly
+      id: `page-${pageNum - 1}-${Date.now()}`,
+      originalIndex: pageNum - 1, // 0-based, matches pdf-lib's API
+      url: canvas.toDataURL("image/jpeg", 0.8),
+    });
+  }
+
+  return thumbnails;
+};
+
+export const organizePdf = async (file, pageIndices) => {
+  if (!file) throw new Error("No file provided.");
+  if (!pageIndices || pageIndices.length === 0)
+    throw new Error("No pages selected.");
+
+  const arrayBuffer = await file.arrayBuffer();
+  const sourcePdf = await PDFDocument.load(arrayBuffer);
+  const outputPdf = await PDFDocument.create();
+
+  const copiedPages = await outputPdf.copyPages(sourcePdf, pageIndices);
+  copiedPages.forEach((page) => outputPdf.addPage(page));
+
+  const pdfBytes = await outputPdf.save();
+  return new Blob([pdfBytes], { type: "application/pdf" });
 };

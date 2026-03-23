@@ -41,6 +41,24 @@ export function Navbar() {
             >
               Image To PDF
             </Link>
+            <Link
+              to="/compress"
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Compress
+            </Link>
+            <Link
+              to="/rotate"
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Rotate
+            </Link>
+            <Link
+              to="/organize"
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Organize
+            </Link>
           </div>
         </div>
       </div>
