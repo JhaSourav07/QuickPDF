@@ -186,6 +186,45 @@ export const rotatePdfPerPage = async (file, pageRotations) => {
   return new Blob([pdfBytes], { type: "application/pdf" });
 };
 
+// Options: { position: "center"|"left"|"right", fontSize, prefix, startNumber, margin }
+export const addPageNumbers = async (file, options = {}) => {
+  const {
+    position    = "center",
+    fontSize    = 11,
+    prefix      = "",
+    startNumber = 1,
+    margin      = 24,
+  } = options;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc      = await PDFDocument.load(arrayBuffer);
+  const font        = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const pages       = pdfDoc.getPages();
+
+  pages.forEach((page, i) => {
+    const { width } = page.getSize();
+    const label     = `${prefix}${startNumber + i}`;
+    const textWidth = font.widthOfTextAtSize(label, fontSize);
+
+    let x;
+    if (position === "left")       x = margin;
+    else if (position === "right") x = width - textWidth - margin;
+    else                           x = (width - textWidth) / 2; // center
+
+    page.drawText(label, {
+      x,
+      y: margin,
+      size: fontSize,
+      font,
+      color: rgb(0.3, 0.3, 0.3),
+    });
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  return new Blob([pdfBytes], { type: "application/pdf" });
+};
+
+
 
 export const getPdfThumbnails = async (file) => {
   if (!file) throw new Error("No file provided.");

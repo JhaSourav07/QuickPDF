@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   Images,
   Contrast,
+  Hash,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -276,6 +277,34 @@ export function ToolsGrid() {
           </p>
           <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
             Open Grayscale PDF <span className="ml-2">→</span>
+          </div>
+        </Link>
+      </motion.div>
+
+      {/* 10. Page Numbers Card */}
+      <motion.div
+        variants={cardVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ delay: 0.4 }}
+      >
+        <Link
+          to="/page-numbers"
+          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
+            <Hash className="w-6 h-6" />
+          </div>
+          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
+            Page Numbers
+          </h2>
+          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
+            Auto-stamp sequential numbers on every page footer. Choose position, prefix, and start number.
+          </p>
+          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
+            Open Page Numbers <span className="ml-2">→</span>
           </div>
         </Link>
       </motion.div>

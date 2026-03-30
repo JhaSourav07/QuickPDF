@@ -118,7 +118,8 @@ export function Navbar() {
     { name: "Rotate",       path: "/rotate"       },
     { name: "Organize",     path: "/organize"     },
     { name: "PDF To Image", path: "/pdf-to-image" },
-    { name: "Grayscale",    path: "/grayscale"    },
+    { name: "Grayscale",     path: "/grayscale"    },
+    { name: "Page Numbers",  path: "/page-numbers" },
   ];
 
   return (

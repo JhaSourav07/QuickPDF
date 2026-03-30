@@ -12,4 +12,5 @@ export const FREE_LIMITS = {
   organize:   { maxFileSizeMb: 100 },
   pdfToImage: { maxFileSizeMb: 100 },
   grayscale:  { maxFileSizeMb: 100 },
+  pageNumbers: { maxFileSizeMb: 100 },
 };
