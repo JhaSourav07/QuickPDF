@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { Navbar } from "./components/layout/Navbar";
 import { PageContainer } from "./components/layout/PageContainer";
 import { AnimatedBackground } from "./components/ui/AnimatedBackground";
+import { FeedbackWidget } from "./components/ui/FeedbackWidget";
 
 // pages
 import { Home } from "./pages/Home/Home";
@@ -19,6 +20,7 @@ import { Grayscale }   from "./pages/Grayscale/Grayscale";
 import { PageNumbers } from "./pages/PageNumbers/PageNumbers";
 import { LockPdf }     from "./pages/LockPdf/LockPdf";
 import { EditPdf }     from "./pages/EditPdf/EditPdf";
+import { Admin }       from "./pages/Admin/Admin";
 
 function App() {
   return (
@@ -41,9 +43,11 @@ function App() {
             <Route path="/page-numbers" element={<PageNumbers />} />
             <Route path="/lock-pdf"     element={<LockPdf />} />
             <Route path="/edit-pdf"     element={<EditPdf />} />
+            <Route path="/admin"        element={<Admin />} />
           </Routes>
         </PageContainer>
       </div>
+      <FeedbackWidget />
       <Analytics />
     </div>
   );
