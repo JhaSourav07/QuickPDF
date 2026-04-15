@@ -15,7 +15,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/jhasourav07/quickpdf/pulls)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b4fa8a5d-0510-4b09-a5a6-b043ffcf4691/deploy-status)](https://app.netlify.com/projects/quickstpdf/deploys)
 
-**[🚀 Try the Live Demo Here](https://quickstpdf.netlify.app)**
+**[🚀 Try the Live Demo Here](https://quickpdff.vercel.app/)**
 
 ---
 
