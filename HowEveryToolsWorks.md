@@ -44,19 +44,19 @@ This tool converts one or multiple images into a single PDF document.
 
 ## 📌 Compress PDF
 
-The Compress PDF tool reduces the file size of PDF documents for easier sharing and storage.
+The Compress PDF tool attempts to reduce the file size of PDF documents for easier sharing and storage.
 
 ### How it Works:
 
 1. The user uploads a PDF file.
-2. The file is processed in the browser.
-3. Compression techniques are applied (such as optimizing images and removing unnecessary data).
-4. A smaller version of the PDF is generated.
-5. The compressed file is available for download.
+2. The file is processed entirely in the browser.
+3. The PDF is re-saved using pdf-lib with compact serialization options where possible.
+4. A new PDF is generated, which may be smaller depending on the document’s structure and contents.
+5. The resulting file is available for download.
 
 ### Use Case:
 
-- Reducing file size for email or uploads
+- Reducing file size for email or uploads when the document can be compacted by re-saving
 
 ---
 
