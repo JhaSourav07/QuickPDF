@@ -104,9 +104,9 @@ This tool converts each page of a PDF into image files.
 
 1. The user uploads a PDF file.
 2. Pages are rendered using pdfjs-dist.
-3. Each page is converted into an image format (e.g., PNG or JPEG).
-4. Images are generated in the browser.
-5. The user can download images individually or as a zip file.
+3. Each page is converted into a JPEG image.
+4. The JPEG images are generated in the browser.
+5. The images are packaged into a ZIP file for download.
 
 ### Use Case:
 
