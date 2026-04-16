@@ -1,6 +1,6 @@
 # 🔧 How Every Tool Works
 
-This document provides a detailed explanation of how each tool in QuickPDF works. All operations are performed entirely in the browser, ensuring user privacy and security.
+This document provides a detailed explanation of how each tool in QuickPDF works. All PDF processing is performed entirely in the browser, and files are never uploaded, helping protect user privacy and security.
 
 ---
 
