@@ -6,14 +6,14 @@ This document provides a detailed explanation of how each tool in QuickPDF works
 
 ## 📌 Watermark Tool
 
-The Watermark Tool allows users to add text or image watermarks to their PDF files without uploading data to any server.
+The Watermark Tool allows users to add text watermarks to their PDF files without uploading data to any server.
 
 ### How it Works:
 
 1. The user uploads a PDF file from their device.
-2. The file is read locally using the browser’s FileReader API.
-3. The user can add a text or image watermark.
-4. The watermark is applied to selected pages using pdf-lib.
+2. The file is read locally in the browser.
+3. The user enters the watermark text.
+4. The text watermark is applied to all pages using pdf-lib.
 5. The processed PDF is generated in the browser.
 6. The final file is available for download.
 
