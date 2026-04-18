@@ -73,7 +73,7 @@ export function Watermark() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
+    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Stamp className="w-8 h-8" />
@@ -94,8 +94,9 @@ export function Watermark() {
         </p>
       </div>
 
-      <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
-        {error && (
+      <div className={previewUrl ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          {error && (
           <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
             {error}
           </div>
@@ -178,29 +179,39 @@ export function Watermark() {
               )}
             </div>
 
-            {previewUrl && (
-              <div className="mt-8 space-y-4 border-t border-white/10 pt-6">
-                <h2 className="text-lg font-semibold text-white">
-                  Preview
-                </h2>
+          </div>
+        )}
+        </div>
 
-                <iframe
-                  src={previewUrl}
-                  title="Watermarked PDF Preview"
-                  className="w-full h-[500px] rounded-xl border border-white/10 bg-white"
-                />
+        {previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Preview
+            </h2>
 
-                <a
-                  href={previewUrl}
-                  download={`QuickPDF_Watermarked_${Date.now()}.pdf`}
-                >
-                  <Button className="w-full sm:w-auto">
-                    <Download className="w-5 h-5 mr-2" />
-                    Download PDF
-                  </Button>
-                </a>
-              </div>
-            )}
+            <iframe
+              src={previewUrl}
+              title="Watermarked PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white mb-6"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = previewUrl;
+                  link.download = `QuickPDF_Watermarked_${Date.now()}.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download PDF
+              </Button>
+            </div>
           </div>
         )}
       </div>
