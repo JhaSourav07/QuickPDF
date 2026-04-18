@@ -193,7 +193,7 @@ export function Watermark() {
               src={previewUrl}
               title="Watermarked PDF Preview"
               className="w-full flex-grow rounded-xl border border-white/10 bg-white mb-6"
-              style={{ minHeight: "600px" }}
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
             />
 
             <div className="mt-auto pt-4 border-t border-white/10">
