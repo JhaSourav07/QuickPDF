@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Layers, X, Download, Loader2, Trash2,
   Plus, CheckCircle2, FileText,

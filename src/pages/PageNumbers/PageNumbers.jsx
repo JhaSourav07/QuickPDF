@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Hash, Download, Loader2, CheckCircle2, AlertTriangle, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
@@ -18,7 +19,7 @@ const POSITIONS = [
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16];
 
 export function PageNumbers() {
-  const [file, setFile]             = useState(null);
+  const [file, setFile] = useFileStore("PageNumbers_file", null);
   const [position, setPosition]     = useState("center");
   const [fontSize, setFontSize]     = useState(11);
   const [prefix, setPrefix]         = useState("");

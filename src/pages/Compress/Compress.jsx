@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Minimize2, X, Download, Loader2, Zap, ShieldCheck, Gauge, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
@@ -10,7 +11,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 export function Compress() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Compress_file", null);
   const [level, setLevel] = useState("recommended");
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);

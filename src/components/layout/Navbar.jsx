@@ -320,9 +320,9 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50">
+    <nav className="border-b border-white/10 bg-black/80 backdrop-blur-md fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center gap-4">
+        <div className="flex justify-between h-16 items-center gap-4 relative">
 
           <Link to="/" className="flex items-center gap-2 group z-50 shrink-0">
             <div className="bg-white text-black p-1.5 rounded-md group-hover:scale-105 transition-transform">
@@ -332,7 +332,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation - 4 separate hover dropdowns */}
-          <div className="hidden lg:flex gap-6 flex-1 justify-center">
+          <div className="hidden lg:flex gap-6 absolute left-1/2 transform -translate-x-1/2">
             <EditDropdown />
             <ConvertDropdown />
             <OptimizeDropdown />

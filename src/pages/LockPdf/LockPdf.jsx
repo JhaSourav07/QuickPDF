@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Lock, Eye, EyeOff, X, Download, Loader2,
   CheckCircle2, ShieldCheck, AlertTriangle,
@@ -27,7 +28,7 @@ const STRENGTH_LABELS = ["", "Weak", "Weak", "Fair", "Strong", "Very strong"];
 const STRENGTH_COLORS = ["", "#ef4444", "#f97316", "#eab308", "#22c55e", "#22c55e"];
 
 export function LockPdf() {
-  const [file, setFile]             = useState(null);
+  const [file, setFile] = useFileStore("LockPdf_file", null);
   const [password, setPassword]     = useState("");
   const [confirm, setConfirm]       = useState("");
   const [showPw, setShowPw]         = useState(false);

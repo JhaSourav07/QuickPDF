@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Image as ImageIcon, X, Download, Loader2, CheckCircle2, Plus, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
@@ -72,7 +73,7 @@ function ThumbCard({ item, onRemove, onDragStart, onDragEnter, onDragEnd }) {
 }
 
 export function ImageToPdf() {
-  const [items, setItems]               = useState([]);
+  const [items, setItems] = useFileStore("ImageToPdf_items", []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]                 = useState(false);
   const [error, setError]               = useState(null);

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Pencil, Type, Highlighter, Square, Eraser,
   Undo2, Download, Loader2, X, FileEdit, CheckCircle2, PenLine, Info,
@@ -67,9 +68,9 @@ function getPos(e, el) { const r = el.getBoundingClientRect(); return { x: e.cli
 
 // ── component ─────────────────────────────────────────────────────────────────
 export function EditPdf() {
-  const [file, setFile]       = useState(null);
-  const [pages, setPages]     = useState([]);    // {imageData,width,height,pdfWidth,pdfHeight}
-  const [textItems, setTextItems] = useState([]); // extracted text with coords
+  const [file, setFile] = useFileStore("EditPdf_file", null);
+  const [pages, setPages]     = useFileStore("EditPdf_pages", []);    // {imageData,width,height,pdfWidth,pdfHeight}
+  const [textItems, setTextItems] = useFileStore("EditPdf_textItems", []); // extracted text with coords
   const [isLoading, setIsLoading]     = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]       = useState(false);
@@ -77,7 +78,7 @@ export function EditPdf() {
 
   // editor
   const [mode, setMode]       = useState("annotate"); // "annotate" | "edittext"
-  const [annotations, setAnnotations] = useState([]);
+  const [annotations, setAnnotations] = useFileStore("EditPdf_annotations", []);
   const [tool, setTool]       = useState("draw");
   const [color, setColor]     = useState("#ef4444");
   const [stroke, setStroke]   = useState(3);
@@ -85,7 +86,7 @@ export function EditPdf() {
   const [opacity]             = useState(1);
 
   // text editing
-  const [textEdits, setTextEdits] = useState({});   // {itemId → newText}
+  const [textEdits, setTextEdits] = useFileStore("EditPdf_textEdits", {});   // {itemId → newText}
   const [editingId, setEditingId] = useState(null);
 
   // annotate text-box overlay

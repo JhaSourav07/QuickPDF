@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { RotateCw, RotateCcw, Download, Loader2, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button }         from "../../components/ui/Button";
@@ -126,7 +127,7 @@ function PageCard({ page, rotation, onLeft, onRight }) {
 }
 
 export function Rotate() {
-  const [file, setFile]             = useState(null);
+  const [file, setFile] = useFileStore("Rotate_file", null);
   const [rotations, setRotations]   = useState({});   // { pageIndex: deltaDegrees }
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]             = useState(false);
