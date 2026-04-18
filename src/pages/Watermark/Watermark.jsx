@@ -184,7 +184,7 @@ export function Watermark() {
         </div>
 
         {previewUrl && (
-          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[700px]">
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
             <h2 className="text-lg font-semibold text-white mb-6">
               Preview
             </h2>
