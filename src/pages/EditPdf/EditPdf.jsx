@@ -147,6 +147,9 @@ export function EditPdf() {
   // ── redraw canvas on annotation + text-edit changes ─────────────────────────
   useEffect(() => { pages.forEach((_, i) => redraw(i, null)); }, [annotations, pages, textEdits, textItems]); // eslint-disable-line
 
+  // Clean up stale drawing/textBox state when tool or mode changes
+  useEffect(() => { setTextBox(null); drawing.current = null; }, [tool, mode]);
+
   function redraw(pi, inProgress) {
     const cvs = canvasRefs.current[pi]; if (!cvs) return;
     const ctx = cvs.getContext("2d"); ctx.clearRect(0, 0, cvs.width, cvs.height);
@@ -416,7 +419,7 @@ export function EditPdf() {
                 onChange={e => setTextBox(t => ({ ...t, value: e.target.value }))}
                 onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { commitTextBox(); e.preventDefault(); } if (e.key==="Escape") setTextBox(null); }}
                 onBlur={commitTextBox}
-                style={{ position:"absolute", left:textBox.x, top:textBox.y - fontSize, background:"transparent", border:"1px dashed rgba(255,255,255,0.4)", color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:"2px 4px", minWidth:80, minHeight:fontSize+8 }}
+                style={{ position:"absolute", left:textBox.x, top:textBox.y - fontSize, background:"rgba(30,30,30,0.95)", border:"2px solid #3b82f6", color: color === "#ffffff" ? "#ffffff" : color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:"4px 6px", minWidth:120, minHeight:Math.max(fontSize * 2.5, 48), borderRadius:4, boxShadow:"0 2px 8px rgba(0,0,0,0.5)", zIndex:25 }}
               />
             )}
           </div>
