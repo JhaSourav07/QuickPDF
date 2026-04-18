@@ -1,10 +1,11 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { Navbar } from "./components/layout/Navbar";
 import { PageContainer } from "./components/layout/PageContainer";
 import { AnimatedBackground } from "./components/ui/AnimatedBackground";
 import { FeedbackWidget } from "./components/ui/FeedbackWidget";
+import { applySeo } from "./lib/seo";
 
 // pages
 import { Home } from "./pages/Home/Home";
@@ -23,6 +24,12 @@ import { EditPdf }     from "./pages/EditPdf/EditPdf";
 import { Admin }       from "./pages/Admin/Admin";
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    applySeo(location.pathname);
+  }, [location.pathname]);
+
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white overflow-x-hidden w-full">
       <AnimatedBackground />
