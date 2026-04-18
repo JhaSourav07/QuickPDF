@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
@@ -9,7 +10,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 export function Watermark() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Watermark_file", null);
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
@@ -65,8 +66,9 @@ export function Watermark() {
 
       setPreviewUrl(url);
       await incrementUsage();
-    } catch (err) {
-      setError("An error occurred while adding the watermark.");
+    } catch {
+      setError("Could not read the PDF file. It might be corrupted or encrypted.");
+      setFile(null);
     } finally {
       setIsProcessing(false);
     }

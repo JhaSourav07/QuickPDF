@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { SplitSquareHorizontal, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
@@ -9,7 +10,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 export function Split() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Split_file", null);
   const [totalPages, setTotalPages] = useState(0);
   const [range, setRange] = useState({ start: 1, end: 1 });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -36,7 +37,7 @@ export function Split() {
       setFile(selectedFile);
       setTotalPages(count);
       setRange({ start: 1, end: count });
-    } catch (err) {
+    } catch {
       setError("Could not read the PDF file. It might be corrupted or encrypted.");
     } finally {
       setIsProcessing(false);

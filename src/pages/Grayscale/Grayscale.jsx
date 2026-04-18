@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Contrast, X, Download, Loader2, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
@@ -10,7 +11,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 export function Grayscale() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Grayscale_file", null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [result, setResult] = useState(null);

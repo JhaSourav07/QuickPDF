@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { LayoutGrid, Trash2, Download, Loader2, RotateCcw, FileWarning, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
@@ -42,8 +43,8 @@ function ThumbnailCard({ item, pageNumber, onRemove, isProcessing, isDragOver, o
 }
 
 export function Organize() {
-  const [file, setFile] = useState(null);
-  const [thumbnails, setThumbnails] = useState([]);
+  const [file, setFile] = useFileStore("Organize_file", null);
+  const [thumbnails, setThumbnails] = useFileStore("Organize_thumbnails", []);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);

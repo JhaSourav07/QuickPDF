@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Layers, X, Download, Loader2, Trash2, GripVertical,
   Plus, Eye, EyeOff, CheckCircle2, FileText,
@@ -201,7 +202,7 @@ function PreviewModal({ item, onClose }) {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export function Merge() {
-  const [items, setItems]               = useState([]);   // { id, file, name, size, thumb, numPages, loadingThumb, order }
+  const [items, setItems] = useFileStore("Merge_items", []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]                 = useState(false);
   const [error, setError]               = useState(null);
