@@ -129,32 +129,84 @@ export const imageToPdf = async (files) => {
   return new Blob([pdfBytes], { type: "application/pdf" });
 };
 
-export const compressWithQuality = async (file, quality = 0.5) => {
+export const compressWithQuality = async (file, quality = 0.6) => {
   const arrayBuffer = await file.arrayBuffer();
 
-  // Some PDFs are technically readable but still carry permission flags.
-  const pdfDoc = await PDFDocument.load(arrayBuffer, {
-    ignoreEncryption: true,
-    // This keeps very large files from freezing the browser as easily.
-    capNumbers: true,
-  });
+  const sourcePdf = await pdfjsLib.getDocument({
+    data: arrayBuffer,
+  }).promise;
 
-  const compressedDoc = await PDFDocument.create();
-  const copiedPages = await compressedDoc.copyPages(
-    pdfDoc,
-    pdfDoc.getPageIndices(),
-  );
-  copiedPages.forEach((page) => compressedDoc.addPage(page));
+  const outputPdf = await PDFDocument.create();
 
-  // Object streams usually save a noticeable amount of space on bigger PDFs.
-  const compressedBytes = await compressedDoc.save({
+  let scale;
+  let jpegQuality;
+
+  if (quality >= 0.85) {
+    // HIGH QUALITY
+    // Better compression while keeping clarity
+    scale = 0.92;
+    jpegQuality = 0.72;
+  } else if (quality >= 0.55) {
+    // BALANCED
+    scale = 0.95;
+    jpegQuality = 0.58;
+  } else {
+    // EXTREME
+    scale = 0.75;
+    jpegQuality = 0.38;
+  }
+
+  for (let pageNumber = 1; pageNumber <= sourcePdf.numPages; pageNumber++) {
+    const page = await sourcePdf.getPage(pageNumber);
+
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    await page.render({
+      canvasContext: context,
+      viewport,
+    }).promise;
+
+    const imageBlob = await new Promise((resolve) => {
+      canvas.toBlob(resolve, "image/jpeg", jpegQuality);
+    });
+
+    const imageBytes = await imageBlob.arrayBuffer();
+
+    const jpgImage = await outputPdf.embedJpg(imageBytes);
+
+    const pdfPage = outputPdf.addPage([
+      viewport.width,
+      viewport.height,
+    ]);
+
+    pdfPage.drawImage(jpgImage, {
+      x: 0,
+      y: 0,
+      width: viewport.width,
+      height: viewport.height,
+    });
+
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+
+  const pdfBytes = await outputPdf.save({
     useObjectStreams: true,
     addDefaultPage: false,
     updateFieldAppearances: false,
   });
 
-  return new Blob([compressedBytes], { type: "application/pdf" });
+  return new Blob([pdfBytes], {
+    type: "application/pdf",
+  });
 };
+
 
 export const rotatePdf = async (file, rotationAngle) => {
   const arrayBuffer = await file.arrayBuffer();
