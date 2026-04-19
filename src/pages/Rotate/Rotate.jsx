@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { RotateCw, RotateCcw, Download, Loader2, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }         from "../../components/ui/Button";
 import { UpgradeButton }  from "../../components/ui/UpgradeButton";
 import { rotatePdfPerPage } from "../../services/pdf.service";
@@ -90,14 +90,14 @@ function usePdfPages(file) {
 function PageCard({ page, rotation, onLeft, onRight }) {
   const deg = ((rotation % 360) + 360) % 360;
   return (
-    <motion.div
+    <Motion.div
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-3 bg-zinc-900/60 border border-white/[0.06] rounded-2xl p-3"
     >
       <div className="relative overflow-hidden rounded-xl bg-zinc-800 w-full flex items-center justify-center" style={{ minHeight: 140 }}>
-        <motion.img
+        <Motion.img
           src={page.url}
           alt={`Page ${page.index + 1}`}
           animate={{ rotate: deg }}
@@ -126,7 +126,7 @@ function PageCard({ page, rotation, onLeft, onRight }) {
           <RotateCw className="w-3.5 h-3.5" /> +90°
         </button>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -203,14 +203,14 @@ export function Rotate() {
   return (
     <div className="max-w-5xl mx-auto py-16 px-4">
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ rotate: -180, opacity: 0 }}
           animate={{ rotate: 0, opacity: 1 }}
           transition={{ duration: 0.8, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <RefreshCw className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Rotate PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Rotate individual pages or the whole document. Processed entirely in your browser.
@@ -218,13 +218,13 @@ export function Rotate() {
 
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               className="mt-6 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300 text-sm"
             >
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
               <span><span className="font-semibold text-white">Free limit reached.</span> Connect your wallet to keep going.</span>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -232,12 +232,12 @@ export function Rotate() {
       {!file ? (
         <Dropzone onFilesSelected={(f) => setFile(f[0])} multiple={false} text="Drop PDF to rotate" />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
 
           {/* Size warning */}
           <AnimatePresence>
             {isOverSizeLimit && !isPremium && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="mb-6 overflow-hidden"
               >
                 <div className="flex items-start gap-3 px-4 py-3.5 bg-zinc-900 border border-white/10 rounded-2xl text-sm">
@@ -247,7 +247,7 @@ export function Rotate() {
                     <span className="text-zinc-400">Your file is {formatFileSize(file.size)}. Upgrade to unlock unlimited sizes.</span>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
 
@@ -302,7 +302,7 @@ export function Rotate() {
             </div>
           )}
 
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* Sticky download bar — always visible, never near the scroll sentinel */}
