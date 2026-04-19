@@ -89,8 +89,8 @@ VITE_FIREBASE_APP_ID=your_app_id
 # WalletConnect — Get a free Project ID at https://cloud.walletconnect.com
 VITE_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 
-# Admin Dashboard (can be any string for local dev)
-VITE_ADMIN_PASSWORD=any_local_password
+# Admin Dashboard — Authentication is handled via Firebase Auth. 
+# Create an admin user in your Firebase Console → Authentication.
 ```
 
 > ⚠️ **Never commit `.env.local` or any real API keys to the repository.** The `.gitignore` already excludes it, but please double-check before pushing.
