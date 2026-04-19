@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Layers,
@@ -14,9 +14,139 @@ import {
   Lock,
   FileEdit,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function ToolsGrid() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const toolsPerPage = 6; // Show 6 cards per page
+
+  // All tools data
+  const allTools = [
+    {
+      id: 1,
+      name: "Merge PDF",
+      description: "Combine multiple PDFs into a single document in milliseconds. Drag, drop, and organize securely.",
+      icon: Layers,
+      path: "/merge",
+      buttonText: "Open Merge Tool",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 2,
+      name: "Split PDF",
+      description: "Extract specific pages or break a massive document down into smaller files instantly.",
+      icon: SplitSquareHorizontal,
+      path: "/split",
+      buttonText: "Open Split Tool",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 3,
+      name: "Add Watermark",
+      description: "Stamp custom text diagonally across your documents. Perfect for sensitive drafts and contracts.",
+      icon: Stamp,
+      path: "/watermark",
+      buttonText: "Open Watermark Tool",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 4,
+      name: "Image to PDF",
+      description: "Convert JPG and PNG images into a high-quality PDF document. Drag to reorder your pages.",
+      icon: ImageIcon,
+      path: "/image-to-pdf",
+      buttonText: "Open Image to PDF",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 5,
+      name: "Compress PDF",
+      description: "Reduce file size while maintaining visual quality.",
+      icon: Minimize2,
+      path: "/compress",
+      buttonText: "Open Compress PDF",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 6,
+      name: "Rotate PDF",
+      description: "Rotate pages in your PDF document.",
+      icon: RefreshCw,
+      path: "/rotate",
+      buttonText: "Open Rotate PDF",
+      iconSize: "w-10 h-10"
+    },
+    {
+      id: 7,
+      name: "Organize PDF",
+      description: "Organize pages in your PDF document.",
+      icon: LayoutGrid,
+      path: "/organize",
+      buttonText: "Open Organize PDF",
+      iconSize: "w-10 h-10"
+    },
+    {
+      id: 8,
+      name: "PDF to Images",
+      description: "Extract images from your PDF document.",
+      icon: Images,
+      path: "/pdf-to-image",
+      buttonText: "Open PDF to Images",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 9,
+      name: "Grayscale PDF",
+      description: "Convert your PDF to grayscale.",
+      icon: Contrast,
+      path: "/grayscale",
+      buttonText: "Open Grayscale PDF",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 10,
+      name: "Page Numbers",
+      description: "Auto-stamp sequential numbers on every page footer. Choose position, prefix, and start number.",
+      icon: Hash,
+      path: "/page-numbers",
+      buttonText: "Open Page Numbers",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 11,
+      name: "Lock PDF",
+      description: "Password-protect your PDF with RC4 encryption. Processed entirely in your browser — nothing is uploaded.",
+      icon: Lock,
+      path: "/lock-pdf",
+      buttonText: "Open Lock PDF",
+      iconSize: "w-6 h-6"
+    },
+    {
+      id: 12,
+      name: "Edit PDF",
+      description: "Draw, highlight, add text, and annotate your PDF pages directly in the browser.",
+      icon: FileEdit,
+      path: "/edit-pdf",
+      buttonText: "Open PDF Editor",
+      iconSize: "w-6 h-6"
+    }
+  ];
+
+  // Calculate pagination
+  const totalTools = allTools.length;
+  const totalPages = Math.ceil(totalTools / toolsPerPage);
+  const indexOfLastTool = currentPage * toolsPerPage;
+  const indexOfFirstTool = indexOfLastTool - toolsPerPage;
+  const currentTools = allTools.slice(indexOfFirstTool, indexOfLastTool);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Smooth scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Card variants for animation
   const cardVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -26,346 +156,156 @@ export function ToolsGrid() {
     },
   };
 
+  // Grid container variants for stagger animation
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
   return (
-    <div className="grid md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto mb-32">
-      {/* 1. Merge Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-      >
-        <Link
-          to="/merge"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
+    <div className="w-full max-w-6xl mx-auto mb-32">
+      {/* Tools Grid with Animation */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentPage}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Layers className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Merge PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Combine multiple PDFs into a single document in milliseconds. Drag,
-            drop, and organize securely.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Merge Tool <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
+          {currentTools.map((tool, idx) => {
+            const IconComponent = tool.icon;
+            return (
+              <motion.div
+                key={tool.id}
+                variants={cardVariants}
+                custom={idx}
+              >
+                <Link
+                  to={tool.path}
+                  className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
+                    <IconComponent className={tool.iconSize} />
+                  </div>
+                  <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
+                    {tool.name}
+                  </h2>
+                  <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
+                    {tool.description}
+                  </p>
+                  <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
+                    {tool.buttonText} <span className="ml-2">→</span>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
 
-      {/* 2. Split Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.1 }}
-      >
-        <Link
-          to="/split"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <SplitSquareHorizontal className="w-6 h-6" />
+      {/* Pagination Controls - Only show if more than 1 page */}
+      {totalPages > 1 && (
+        <>
+          {/* Info text */}
+          <div className="text-center text-zinc-500 text-sm mt-8 mb-6">
+            Showing {indexOfFirstTool + 1}-{Math.min(indexOfLastTool, totalTools)} of {totalTools} tools
           </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Split PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Extract specific pages or break a massive document down into smaller
-            files instantly.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Split Tool <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
 
-      {/* 3. Watermark Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.2 }}
-      >
-        <Link
-          to="/watermark"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Stamp className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Add Watermark
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Stamp custom text diagonally across your documents. Perfect for
-            sensitive drafts and contracts.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Watermark Tool <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
+          {/* Pagination Buttons */}
+          <div className="flex justify-center items-center gap-2">
+            {/* Previous Button */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                currentPage === 1
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
+                  : 'bg-zinc-800 text-white hover:bg-zinc-700 hover:scale-105 active:scale-95'
+              }`}
+            >
+              ← Previous
+            </button>
 
-      {/* 4. Image to PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/image-to-pdf"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <ImageIcon className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Image to PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Convert JPG and PNG images into a high-quality PDF document. Drag to
-            reorder your pages.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Image to PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
+            {/* Page Numbers */}
+            <div className="flex gap-2 mx-2">
+              {getPageNumbers().map((page, index) => (
+                page === '...' ? (
+                  <span key={`ellipsis-${index}`} className="px-3 py-2 text-zinc-500">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                      currentPage === page
+                        ? 'bg-white text-black font-semibold shadow-lg scale-105'
+                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:scale-105'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              ))}
+            </div>
 
-      {/* 5. Compress PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/compress"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Minimize2 className="w-6 h-6" />
+            {/* Next Button */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                currentPage === totalPages
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
+                  : 'bg-zinc-800 text-white hover:bg-zinc-700 hover:scale-105 active:scale-95'
+              }`}
+            >
+              Next →
+            </button>
           </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Compress PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Reduce file size while maintaining visual quality.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Compress PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 6. Rotate PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/rotate"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <RefreshCw className="w-10 h-10" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Rotate PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Rotate pages in your PDF document.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Rotate PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 7. Organize PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/organize"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <LayoutGrid className="w-10 h-10" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Organize PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Organize pages in your PDF document.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Organize PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 8. PDF to Images Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/pdf-to-image"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Images className="w-6 h-6" />,
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            PDF to Images
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Extract images from your PDF document.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open PDF to Images <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 9. Grayscale Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.3 }}
-      >
-        <Link
-          to="/grayscale"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Contrast className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Grayscale PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Convert your PDF to grayscale.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Grayscale PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 10. Page Numbers Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.4 }}
-      >
-        <Link
-          to="/page-numbers"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Hash className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Page Numbers
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Auto-stamp sequential numbers on every page footer. Choose position, prefix, and start number.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Page Numbers <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 11. Lock PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.4 }}
-      >
-        <Link
-          to="/lock-pdf"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Lock PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Password-protect your PDF with RC4 encryption. Processed entirely in your browser — nothing is uploaded.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open Lock PDF <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* 12. Edit PDF Card */}
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay: 0.4 }}
-      >
-        <Link
-          to="/edit-pdf"
-          className="group flex flex-col p-8 bg-[#0a0a0a] border border-white/10 rounded-3xl hover:border-white/30 hover:bg-white/[0.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.03)] transition-all duration-500 text-left h-full relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative z-10 w-14 h-14 border border-white/10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-500">
-            <FileEdit className="w-6 h-6" />
-          </div>
-          <h2 className="relative z-10 text-2xl font-semibold text-white mb-3 tracking-tight">
-            Edit PDF
-          </h2>
-          <p className="relative z-10 text-zinc-400 mb-8 font-light flex-grow leading-relaxed">
-            Draw, highlight, add text, and annotate your PDF pages directly in the browser.
-          </p>
-          <div className="relative z-10 flex items-center text-sm font-medium text-white group-hover:translate-x-2 transition-transform duration-300">
-            Open PDF Editor <span className="ml-2">→</span>
-          </div>
-        </Link>
-      </motion.div>
+        </>
+      )}
     </div>
   );
 }
