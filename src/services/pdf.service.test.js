@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { PDFDocument } from 'pdf-lib';
-import { mergePdfs, splitPdf, getPdfPageCount, addWatermark, addPageNumbers, rotatePdf, rotatePdfPerPage } from './pdf.service.js';
+import { mergePdfs, splitPdf, getPdfPageCount, addWatermark, addPageNumbers, rotatePdf, rotatePdfPerPage, lockPdf } from './pdf.service.js';
 
 vi.mock('pdfjs-dist', () => ({
   getDocument: vi.fn(),
@@ -173,5 +173,35 @@ describe('rotatePdfPerPage', () => {
     // Assert: Verify it executes successfully and returns a Blob
     expect(rotatedBlob).toBeInstanceOf(Blob);
     expect(rotatedBlob.type).toBe('application/pdf');
+  });
+});
+
+describe('lockPdf', () => {
+  it('should lock the PDF and return a valid PDF Blob', async () => {
+    // Arrange: Create a mock 1-page PDF
+    const file = await createMockPdfFile('lock-test.pdf', 1);
+    
+    // Act: Lock with a password
+    const lockedBlob = await lockPdf(file, 'mysecretpassword');
+    
+    // Assert: Verify it executes successfully and returns a Blob
+    expect(lockedBlob).toBeInstanceOf(Blob);
+    expect(lockedBlob.type).toBe('application/pdf');
+  });
+
+  it('should throw an error if no password is provided', async () => {
+    // Arrange: Create a mock 1-page PDF
+    const file = await createMockPdfFile('lock-test.pdf', 1);
+
+    // We wrap the call to handle synchronous or asynchronous errors
+    const callLockPdf = async (pwd) => {
+      return await lockPdf(file, pwd);
+    };
+
+    // Test: no password
+    await expect(callLockPdf()).rejects.toThrow('A password is required.');
+    
+    // Test: empty string
+    await expect(callLockPdf('')).rejects.toThrow('A password is required.');
   });
 });
