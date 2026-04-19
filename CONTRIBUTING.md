@@ -13,8 +13,9 @@
 5. [Contribution Workflow](#5-contribution-workflow)
 6. [Commit Message Format](#6-commit-message-format)
 7. [Code Quality & Linting](#7-code-quality--linting)
-8. [Submitting a Pull Request](#8-submitting-a-pull-request)
-9. [Getting Help](#9-getting-help)
+8. [Testing & CI/CD](#8-testing--cicd)
+9. [Submitting a Pull Request](#9-submitting-a-pull-request)
+10. [Getting Help](#10-getting-help)
 
 ---
 
@@ -24,7 +25,7 @@ Before you begin, make sure you have the following installed on your machine:
 
 | Tool | Recommended Version | Download |
 |------|---------------------|----------|
-| **Node.js** | `v18+` (LTS) | [nodejs.org](https://nodejs.org) |
+| **Node.js** | `v22+` (LTS) | [nodejs.org](https://nodejs.org) |
 | **npm** | Comes with Node.js | — |
 | **Git** | Any recent version | [git-scm.com](https://git-scm.com) |
 
@@ -306,7 +307,27 @@ Fix all errors before pushing. PRs with lint errors will not be merged.
 
 ---
 
-## 8. Submitting a Pull Request
+## 8. Testing & CI/CD
+
+We rely on **Vitest** for lightning-fast, lightweight unit and integration testing. 
+
+To keep the development environment accessible to all students and contributors, we intentionally **do not** use heavy browser testing frameworks (like Playwright or Cypress). This ensures you won't have to download massive browser binaries just to contribute.
+
+### Running Tests Locally
+
+Before opening a Pull Request, you **must** run the test suite locally to ensure your changes don't break the core PDF logic:
+
+```bash
+npm run test
+```
+
+### The CI/CD Gatekeeper
+
+We use a GitHub Actions pipeline that acts as an automated gatekeeper. **Any Pull Request that fails linting (`npm run lint`) or unit tests (`npm run test`) will be automatically blocked.** Please save everyone time by verifying your code locally first!
+
+---
+
+## 9. Submitting a Pull Request
 
 When you open a PR, please:
 
@@ -327,6 +348,7 @@ Before clicking "Create Pull Request", verify:
 - [ ] My branch is up to date with `upstream/main`
 - [ ] `npm run dev` runs without errors
 - [ ] `npm run lint` passes with zero errors
+- [ ] `npm run test` passes with all tests green
 - [ ] I have not removed any `eslint-disable` comments
 - [ ] No PDF data is sent to any external server or API
 - [ ] My UI changes match the existing dark glassmorphism design
@@ -336,7 +358,7 @@ Before clicking "Create Pull Request", verify:
 
 ---
 
-## 9. Getting Help
+## 10. Getting Help
 
 Stuck? Have a question? Here's how to get support:
 
