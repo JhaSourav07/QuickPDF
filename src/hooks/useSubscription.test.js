@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAccount } from 'wagmi';
-import { doc, getDoc, setDoc, updateDoc, onSnapshot, increment } from 'firebase/firestore';
+import { getDoc, setDoc, updateDoc, onSnapshot, increment } from 'firebase/firestore';
 import { useSubscription } from './useSubscription';
 
 vi.mock('wagmi', () => ({
