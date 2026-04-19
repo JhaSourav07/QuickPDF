@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Contrast, X, Download, Loader2, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,17 +23,28 @@ export function Grayscale() {
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
 
   const [batchPreviewUrl, setBatchPreviewUrl] = useState(null);
+  const batchPreviewRef = useRef(null);
 
   const batch = useBatchProcess(
     (f) => convertToGrayscale(f, () => {}),
-    (name) => `Grayscale_${name}`
+    (name) => `Grayscale_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(FREE_LIMITS.grayscale.maxFileSizeMb)),
+      onAfterEach: incrementUsage,
+    }
   );
+
+  useEffect(() => { batchPreviewRef.current = batchPreviewUrl; }, [batchPreviewUrl]);
+  useEffect(() => { return () => { if (batchPreviewRef.current) URL.revokeObjectURL(batchPreviewRef.current); }; }, []);
+
+  const clearBatchPreview = () => { if (batchPreviewRef.current) URL.revokeObjectURL(batchPreviewRef.current); setBatchPreviewUrl(null); };
 
   const handleBatchFilesAdded = async (files) => {
     batch.addFiles(files);
     if (files.length > 0 && !batchPreviewUrl) {
       try {
         const blob = await convertToGrayscale(files[0], () => {});
+        clearBatchPreview();
         setBatchPreviewUrl(URL.createObjectURL(blob));
       } catch { /* preview is optional */ }
     }
@@ -82,20 +93,26 @@ export function Grayscale() {
           {!isPremium && <span className="block text-sm text-zinc-600 mt-1">Free tier: files up to {FREE_LIMITS.grayscale.maxFileSizeMb} MB</span>}
         </p>
         <div className="mt-4 flex justify-center">
-          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); setBatchPreviewUrl(null); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); clearBatchPreview(); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
         </div>
       </div>
 
       {batch.isBatchMode ? (
         <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          {isLocked && (
+            <div className="mb-6">
+              <UpgradeButton reason={lockReason} limitLabel={lockLabel} isWalletConnected={isWalletConnected} isPremium={isPremium} className="w-full" />
+            </div>
+          )}
           <BatchPanel
             batchFiles={batch.batchFiles}
             addFiles={handleBatchFilesAdded}
-            removeFile={(i) => { batch.removeFile(i); if (i === 0) setBatchPreviewUrl(null); }}
+            removeFile={(i) => { batch.removeFile(i); if (i === 0) clearBatchPreview(); }}
             isProcessing={batch.isProcessing}
             progress={batch.progress}
             error={batch.error}
             done={batch.done}
+            runDisabled={isLocked}
             onRun={() => batch.runBatch()}
             runLabel="Convert All to Grayscale & Download ZIP"
             previewUrl={batchPreviewUrl}

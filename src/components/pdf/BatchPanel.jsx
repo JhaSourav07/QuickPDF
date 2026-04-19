@@ -4,17 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/Button";
 import { formatFileSize } from "../../utils/formatters";
 
-/**
- * Reusable batch mode panel.
- *
- * Props:
- *  batchFiles, addFiles, removeFile, clearFiles
- *  isProcessing, progress, error, done
- *  onRun        — called when user clicks "Process & Download ZIP"
- *  runLabel     — button label override (default "Process All & Download ZIP")
- *  previewUrl   — optional: URL of first-file preview (iframe)
- *  accept       — file input accept string (default "application/pdf")
- */
 export function BatchPanel({
   batchFiles,
   addFiles,
@@ -24,12 +13,14 @@ export function BatchPanel({
   error,
   done,
   onRun,
+  runDisabled = false,          // extra disable flag (e.g. password not set)
   runLabel = "Process All & Download ZIP",
   previewUrl,
   accept = "application/pdf",
 }) {
   function handleDrop(e) {
     e.preventDefault();
+    if (isProcessing) return;   // ignore drops mid-run
     addFiles(Array.from(e.dataTransfer.files));
   }
 
@@ -38,13 +29,18 @@ export function BatchPanel({
     e.target.value = "";
   }
 
+  const canRun = batchFiles.length > 0 && !isProcessing && !runDisabled;
+
   return (
     <div className="space-y-6">
       {/* Drop zone */}
       <label
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
-        className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/25 hover:bg-white/[0.02] transition-all"
+        className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl transition-all
+          ${isProcessing
+            ? "border-white/5 opacity-40 cursor-not-allowed"
+            : "border-white/10 cursor-pointer hover:border-white/25 hover:bg-white/[0.02]"}`}
       >
         <PackageOpen className="w-8 h-8 text-zinc-600 mb-2" />
         <span className="text-sm text-zinc-500">
@@ -77,7 +73,6 @@ export function BatchPanel({
                 <p className="text-sm text-zinc-200 truncate">{file.name}</p>
                 <p className="text-xs text-zinc-600">{formatFileSize(file.size)}</p>
               </div>
-              {/* Only show preview badge for first file */}
               {i === 0 && previewUrl && (
                 <span className="text-[10px] text-zinc-500 border border-white/10 rounded px-1.5 py-0.5 shrink-0">
                   preview
@@ -150,11 +145,7 @@ export function BatchPanel({
 
       {/* CTA */}
       {batchFiles.length > 0 && (
-        <Button
-          onClick={onRun}
-          disabled={isProcessing || batchFiles.length === 0}
-          className="w-full h-12"
-        >
+        <Button onClick={onRun} disabled={!canRun} className="w-full h-12">
           {isProcessing ? (
             <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing…</>
           ) : done ? (

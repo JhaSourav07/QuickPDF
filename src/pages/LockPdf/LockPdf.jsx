@@ -45,7 +45,11 @@ export function LockPdf() {
 
   const batch = useBatchProcess(
     (f, opts) => lockPdf(f, opts.password),
-    (name) => `locked_${name}`
+    (name) => `locked_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(LIMIT_MB)),
+      onAfterEach: incrementUsage,
+    }
   );
 
   const LIMIT_MB      = FREE_LIMITS.lockPdf.maxFileSizeMb;
@@ -139,6 +143,11 @@ export function LockPdf() {
         />
       ) : batch.isBatchMode ? (
         <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
+          {isLocked && (
+            <div className="mb-2">
+              <UpgradeButton reason={paywallReason} limitLabel={`${LIMIT_MB} MB`} isWalletConnected={isConnected} isPremium={isPremium} className="w-full" />
+            </div>
+          )}
           <p className="text-sm text-zinc-400">The same password will be applied to all files.</p>
           {/* Password inputs reused */}
           <div className="space-y-4">
@@ -174,7 +183,8 @@ export function LockPdf() {
             progress={batch.progress}
             error={batch.error || (!password || mismatch ? "Set a matching password before adding files." : null)}
             done={batch.done}
-            onRun={() => password && password === confirm && batch.runBatch({ password })}
+            runDisabled={!password || mismatch || isLocked}
+            onRun={() => batch.runBatch({ password })}
             runLabel="Lock All & Download ZIP"
           />
         </div>

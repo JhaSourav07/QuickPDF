@@ -7,7 +7,7 @@ import { UpgradeButton }  from "../../components/ui/UpgradeButton";
 import { BatchToggle }    from "../../components/ui/BatchToggle";
 import { BatchPanel }     from "../../components/pdf/BatchPanel";
 import { useBatchProcess } from "../../hooks/useBatchProcess";
-import { rotatePdfPerPage } from "../../services/pdf.service";
+import { rotatePdfPerPage, rotatePdf } from "../../services/pdf.service";
 import { Dropzone }       from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -138,17 +138,14 @@ export function Rotate() {
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } = useSubscription();
 
-  // Batch: rotate all pages of each file by a fixed angle
   const [batchAngle, setBatchAngle] = useState(90);
   const batch = useBatchProcess(
-    async (f, opts) => {
-      const { PDFDocument, degrees } = await import("pdf-lib");
-      const buf = await f.arrayBuffer();
-      const doc = await PDFDocument.load(buf);
-      doc.getPages().forEach(p => p.setRotation(degrees(p.getRotation().angle + opts.angle)));
-      return new Blob([await doc.save()], { type: "application/pdf" });
-    },
-    (name) => `rotated_${name}`
+    (f, opts) => rotatePdf(f, opts.angle),
+    (name) => `rotated_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(ROTATE_LIMIT_MB)),
+      onAfterEach: incrementUsage,
+    }
   );
 
   const ROTATE_LIMIT_MB = FREE_LIMITS.rotate.maxFileSizeMb;
@@ -247,6 +244,9 @@ export function Rotate() {
 
       {batch.isBatchMode ? (
         <div className="bg-zinc-900/50 border border-white/[0.06] rounded-2xl p-6 space-y-6">
+          {isLocked && (
+            <UpgradeButton reason={paywallReason} limitLabel={`${ROTATE_LIMIT_MB} MB`} isWalletConnected={isConnected} isPremium={isPremium} className="w-full" />
+          )}
           <div>
             <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">
               Rotation angle (applied to all pages of all files)
@@ -270,6 +270,7 @@ export function Rotate() {
             done={batch.done}
             onRun={() => batch.runBatch({ angle: batchAngle })}
             runLabel="Rotate All & Download ZIP"
+            runDisabled={isLocked}
           />
         </div>
       ) : !file ? (

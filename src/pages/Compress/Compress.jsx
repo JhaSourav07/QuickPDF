@@ -24,7 +24,11 @@ export function Compress() {
 
   const batch = useBatchProcess(
     (f, opts) => compressWithQuality(f, opts.quality),
-    (name) => `QuickPDF_Compressed_${name}`
+    (name) => `QuickPDF_Compressed_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(FREE_LIMITS.compress.maxFileSizeMb)),
+      onAfterEach: incrementUsage,
+    }
   );
 
   const fileTooLarge = !isPremium && file && file.size > mbToBytes(FREE_LIMITS.compress.maxFileSizeMb);
@@ -86,12 +90,17 @@ export function Compress() {
           )}
         </p>
         <div className="mt-4 flex justify-center">
-          <BatchToggle isBatchMode={batch.isBatchMode} onChange={batch.setIsBatchMode} disabled={isProcessing || batch.isProcessing} />
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
         </div>
       </div>
 
       {batch.isBatchMode ? (
         <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          {isLocked && (
+            <div className="mb-6">
+              <UpgradeButton reason={lockReason} limitLabel={lockLabel} isWalletConnected={isWalletConnected} isPremium={isPremium} className="w-full" />
+            </div>
+          )}
           <div className="space-y-3 mb-6">
             <label className="block text-sm font-medium text-zinc-400 mb-2">Compression Level (applied to all files)</label>
             <div className="grid sm:grid-cols-3 gap-4">
@@ -116,6 +125,7 @@ export function Compress() {
             done={batch.done}
             onRun={() => batch.runBatch({ quality: options.find(o => o.id === level).val })}
             runLabel="Compress All & Download ZIP"
+            runDisabled={isLocked}
           />
         </div>
       ) : (
