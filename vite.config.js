@@ -7,4 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["pdfjs-dist"],
   },
+  test: {
+    globals: true,
+    environment: "node",
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+  },
 });
