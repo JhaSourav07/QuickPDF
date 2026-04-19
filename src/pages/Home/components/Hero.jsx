@@ -1,6 +1,5 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export function Hero() {
   const container = {

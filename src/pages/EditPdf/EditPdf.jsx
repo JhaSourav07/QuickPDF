@@ -4,12 +4,10 @@ import {
   Pencil, Type, Highlighter, Square, Eraser,
   Undo2, Download, Loader2, X, FileEdit, CheckCircle2, PenLine, Info,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import * as pdfjsLib from "pdfjs-dist";
 import { Button }         from "../../components/ui/Button";
 import { UpgradeButton }  from "../../components/ui/UpgradeButton";
 import { Dropzone }       from "../../components/pdf/Dropzone";
-import { formatFileSize } from "../../utils/formatters";
 import { applyEdits, editPdfText } from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
@@ -17,11 +15,11 @@ import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 // ── constants ────────────────────────────────────────────────────────────────
 const RENDER_SCALE = 1.5;
 const ANN_TOOLS = [
-  { id: "draw",      Icon: Pencil,      label: "Draw"      },
-  { id: "text",      Icon: Type,        label: "Text"      },
-  { id: "highlight", Icon: Highlighter, label: "Highlight" },
-  { id: "rect",      Icon: Square,      label: "Rectangle" },
-  { id: "eraser",    Icon: Eraser,      label: "Eraser"    },
+  { id: "draw",      label: "Draw"      },
+  { id: "text",      label: "Text"      },
+  { id: "highlight", label: "Highlight" },
+  { id: "rect",      label: "Rectangle" },
+  { id: "eraser",    label: "Eraser"    },
 ];
 const COLORS = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#ec4899","#000000","#ffffff"];
 const HINTS  = { draw:"Click and drag freely", text:"Click to place a text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
@@ -122,7 +120,7 @@ export function EditPdf() {
         const tc = await page.getTextContent();
         tc.items.forEach((item, idx) => {
           if (!item.str?.trim()) return;
-          const [a, b, , d, tx, ty] = item.transform;
+          const [a, b, , , tx, ty] = item.transform;
           const fs = Math.sqrt(a*a + b*b);
           if (fs < 0.5) return;
           tItems.push({
@@ -284,10 +282,10 @@ export function EditPdf() {
         {mode === "annotate" && <>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex gap-1">
-            {ANN_TOOLS.map(({ id, Icon, label }) => (
+            {ANN_TOOLS.map(({ id, label }) => (
               <button key={id} title={label} onClick={() => setTool(id)}
                 className={`p-2 rounded-xl transition-all ${tool===id?"bg-white text-black":"text-zinc-400 hover:text-white hover:bg-white/10"}`}>
-                <Icon className="w-4 h-4" />
+                
               </button>
             ))}
           </div>

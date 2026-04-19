@@ -40,7 +40,7 @@ export function Dropzone({
   const handleChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       onFilesSelected(Array.from(e.target.files));
-      e.target.value = null; 
+      e.target.value = ''; 
     }
   };
 

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { MessageSquarePlus, X, Bug, Lightbulb, Star, Send, CheckCircle2, Loader2, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 const TYPES = [
-  { value: "bug",         label: "Bug Report",       Icon: Bug,       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20"    },
-  { value: "improvement", label: "Improvement Idea",  Icon: Lightbulb, color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/20" },
-  { value: "general",     label: "General Feedback",  Icon: Star,      color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20"  },
+  { value: "bug",         label: "Bug Report",       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20"    },
+  { value: "improvement", label: "Improvement Idea",  color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/20" },
+  { value: "general",     label: "General Feedback",  color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20"  },
 ];
 
 const TOOLS = [
@@ -54,7 +54,6 @@ export function FeedbackWidget() {
     setSending(false);
   }
 
-  const selectedType = TYPES.find(t => t.value === type);
 
   return (
     <>
@@ -115,11 +114,11 @@ export function FeedbackWidget() {
                   <div className="space-y-2">
                     <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold">Type</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {TYPES.map(({ value, label, Icon, color, bg }) => (
+                      {TYPES.map(({ value, label, color, bg }) => (
                         <button key={value} type="button" onClick={() => setType(value)}
                           className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border text-xs font-medium transition-all
                             ${type === value ? `${bg} ${color} border-current` : "border-white/[0.06] text-zinc-500 hover:text-white hover:border-white/20"}`}>
-                          <Icon className="w-4 h-4" />
+                          
                           {label}
                         </button>
                       ))}

@@ -14,6 +14,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/jhasourav07/quickpdf/pulls)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b4fa8a5d-0510-4b09-a5a6-b043ffcf4691/deploy-status)](https://app.netlify.com/projects/quickstpdf/deploys)
+[![CI Pipeline](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml/badge.svg)](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml)
 
 **[🚀 Try the Live Demo Here](https://quickpdff.vercel.app/)**
 
@@ -61,7 +62,7 @@ Every major PDF tool — Smallpdf, ILovePDF, Adobe Acrobat Online — routes you
 
 ## Getting Started
 
-**Prerequisites:** Node.js v18+
+**Prerequisites:** Node.js v22+ (LTS)
 
 ```bash
 # Clone the repo

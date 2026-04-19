@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Minimize2, X, Download, Loader2, Zap, ShieldCheck, Gauge, Flame } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { compressWithQuality } from "../../services/pdf.service";
@@ -47,7 +47,7 @@ export function Compress() {
       const savings = Math.round(((file.size - blob.size) / file.size) * 100);
       setResult({ blob, size: blob.size, savings: savings > 0 ? savings : 0 });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Compression failed. The file might be encrypted or too large.");
     } finally {
       setIsProcessing(false);

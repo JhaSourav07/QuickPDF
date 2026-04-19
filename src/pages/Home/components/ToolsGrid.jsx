@@ -14,7 +14,6 @@ import {
   Lock,
   FileEdit,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 export function ToolsGrid() {
   const cardVariants = {

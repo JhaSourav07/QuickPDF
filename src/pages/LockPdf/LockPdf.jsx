@@ -4,7 +4,7 @@ import {
   Lock, Eye, EyeOff, X, Download, Loader2,
   CheckCircle2, ShieldCheck, AlertTriangle,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
@@ -105,7 +105,7 @@ export function LockPdf() {
           Password-protect your document entirely in the browser — nothing is uploaded to any server.
         </p>
 
-        {/* global limit banner */}
+        {/* global-limit banner */}
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
             <motion.div

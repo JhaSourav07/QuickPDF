@@ -4,7 +4,7 @@ import {
   CheckCircle2, Circle, Trash2, RefreshCw, Mail,
   Filter, BarChart3, MessageSquare,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   collection, onSnapshot, doc, updateDoc, deleteDoc,
   query, orderBy,
@@ -15,9 +15,9 @@ import { db } from "../../lib/firebase";
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
 const TYPE_META = {
-  bug:         { label: "Bug",         Icon: Bug,       colorClass: "text-red-400",   bgClass: "bg-red-500/10 border-red-500/20"    },
-  improvement: { label: "Improvement", Icon: Lightbulb, colorClass: "text-amber-400", bgClass: "bg-amber-500/10 border-amber-500/20" },
-  general:     { label: "Feedback",    Icon: Star,      colorClass: "text-blue-400",  bgClass: "bg-blue-500/10 border-blue-500/20"  },
+  bug:         { label: "Bug",         colorClass: "text-red-400",   bgClass: "bg-red-500/10 border-red-500/20"    },
+  improvement: { label: "Improvement", colorClass: "text-amber-400", bgClass: "bg-amber-500/10 border-amber-500/20" },
+  general:     { label: "Feedback",    colorClass: "text-blue-400",  bgClass: "bg-blue-500/10 border-blue-500/20"  },
 };
 
 function fmt(ts) {
@@ -70,11 +70,11 @@ function LoginScreen({ onAuth }) {
   );
 }
 
-function StatCard({ label, value, sub, Icon, color }) {
+function StatCard({ label, value, sub, color }) {
   return (
     <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-5 flex items-start gap-4">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-        <Icon className="w-5 h-5" />
+        
       </div>
       <div>
         <p className="text-2xl font-black text-white">{value}</p>
@@ -87,7 +87,6 @@ function StatCard({ label, value, sub, Icon, color }) {
 
 function FeedbackCard({ item, onToggleResolved, onDelete }) {
   const meta     = TYPE_META[item.type] ?? TYPE_META.general;
-  const { Icon } = meta;
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
@@ -104,7 +103,7 @@ function FeedbackCard({ item, onToggleResolved, onDelete }) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${meta.bgClass} ${meta.colorClass}`}>
-            <Icon className="w-3 h-3" />{meta.label}
+            {meta.label}
           </span>
           <span className="px-2.5 py-1 rounded-lg text-xs text-zinc-400 bg-white/5 border border-white/[0.06]">{item.tool}</span>
           {item.rating && <Stars n={item.rating} />}
@@ -224,10 +223,10 @@ export function Admin() {
 
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Submissions" value={total}     Icon={MessageSquare} color="bg-white/5"      />
-          <StatCard label="Open Items"        value={open}      Icon={Circle}        color="bg-blue-500/10"  sub={`${total - open} resolved`} />
-          <StatCard label="Bug Reports"       value={bugs}      Icon={Bug}           color="bg-red-500/10"   />
-          <StatCard label="Avg Rating"        value={avgRating} Icon={Star}          color="bg-amber-500/10" sub={`from ${items.filter(i => i.rating).length} ratings`} />
+          <StatCard label="Total Submissions" value={total}     color="bg-white/5"      />
+          <StatCard label="Open Items"        value={open}      color="bg-blue-500/10"  sub={`${total - open} resolved`} />
+          <StatCard label="Bug Reports"       value={bugs}      color="bg-red-500/10"   />
+          <StatCard label="Avg Rating"        value={avgRating} color="bg-amber-500/10" sub={`from ${items.filter(i => i.rating).length} ratings`} />
         </div>
 
         {/* Filters */}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Image as ImageIcon, X, Download, Loader2, CheckCircle2, Plus, GripVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
@@ -98,7 +98,7 @@ export function ImageToPdf() {
       setError(null);
     setItems((prev) => [...prev, ...valid.map(makeItem)]);
     setDone(false);
-  }, []);
+  }, [setItems]);
 
   function removeItem(id) {
     setItems((prev) => {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Hash, Download, Loader2, CheckCircle2, AlertTriangle, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
@@ -11,9 +11,9 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 const POSITIONS = [
-  { value: "left",   label: "Left",   Icon: AlignLeft   },
-  { value: "center", label: "Center", Icon: AlignCenter },
-  { value: "right",  label: "Right",  Icon: AlignRight  },
+  { value: "left",   label: "Left"   },
+  { value: "center", label: "Center" },
+  { value: "right",  label: "Right"  },
 ];
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16];
@@ -141,7 +141,7 @@ export function PageNumbers() {
             <div>
               <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">Position</label>
               <div className="grid grid-cols-3 gap-2">
-                {POSITIONS.map(({ value, label, Icon }) => (
+                {POSITIONS.map(({ value, label }) => (
                   <button
                     key={value}
                     onClick={() => setPosition(value)}
@@ -152,7 +152,7 @@ export function PageNumbers() {
                         : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:text-white hover:border-white/20",
                     ].join(" ")}
                   >
-                    <Icon className="w-5 h-5" />
+                    
                     {label}
                   </button>
                 ))}

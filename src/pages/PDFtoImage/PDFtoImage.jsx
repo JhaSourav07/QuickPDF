@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Image as ImageIcon, X, Download, Loader2, FileArchive, Images } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { extractImagesFromPdf } from "../../services/pdf.service";
@@ -39,7 +39,7 @@ export function PdfToImage() {
       const zipBlob = await extractImagesFromPdf(file, (current, total) => setProgress({ current, total }));
       setResult({ blob: zipBlob, size: zipBlob.size });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Extraction failed. The file might be corrupted or encrypted.");
     } finally {
       setIsProcessing(false);

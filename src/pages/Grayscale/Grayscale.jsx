@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Contrast, X, Download, Loader2, FileText } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { convertToGrayscale } from "../../services/pdf.service";
@@ -38,7 +38,7 @@ export function Grayscale() {
       const bwBlob = await convertToGrayscale(file, (current, total) => setProgress({ current, total }));
       setResult({ blob: bwBlob, size: bwBlob.size });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Conversion failed. The file might be corrupted or encrypted.");
     } finally {
       setIsProcessing(false);
