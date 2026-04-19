@@ -4,6 +4,9 @@ import { Hash, Download, Loader2, CheckCircle2, AlertTriangle, AlignLeft, AlignC
 import { motion, AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
+import { BatchToggle }   from "../../components/ui/BatchToggle";
+import { BatchPanel }    from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
 import { Dropzone }      from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { addPageNumbers } from "../../services/pdf.service";
@@ -29,6 +32,24 @@ export function PageNumbers() {
   const [error, setError]           = useState(null);
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } = useSubscription();
+
+  const [batchPreviewUrl, setBatchPreviewUrl] = useState(null);
+
+  const batch = useBatchProcess(
+    (f, opts) => addPageNumbers(f, opts),
+    (name) => `numbered_${name}`
+  );
+
+  const handleBatchFilesAdded = async (files) => {
+    batch.addFiles(files);
+    if (files.length > 0 && !batchPreviewUrl) {
+      try {
+        const blob = await addPageNumbers(files[0], { position, fontSize, prefix, startNumber });
+        setBatchPreviewUrl(URL.createObjectURL(blob));
+      } catch { /* preview is optional */ }
+    }
+  };
+
   const LIMIT_MB = FREE_LIMITS.pageNumbers.maxFileSizeMb;
   const isOverSizeLimit = !isPremium && !!file && file.size > mbToBytes(LIMIT_MB);
   const isLocked        = !isPremium && (isOverSizeLimit || hasReachedGlobalLimit);
@@ -76,6 +97,9 @@ export function PageNumbers() {
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Auto-stamp sequential numbers on every page footer. Processed entirely in your browser.
         </p>
+        <div className="mt-6 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); setBatchPreviewUrl(null); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
+        </div>
 
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
@@ -90,8 +114,43 @@ export function PageNumbers() {
         </AnimatePresence>
       </div>
 
-      {!file ? (
+      {!file && !batch.isBatchMode ? (
         <Dropzone onFilesSelected={(f) => { setFile(f[0]); setDone(false); }} multiple={false} text="Drop a PDF to number its pages" />
+      ) : batch.isBatchMode ? (
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
+          <p className="text-sm text-zinc-400">Settings below will be applied to all files.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Position</label>
+              <div className="flex gap-2">
+                {POSITIONS.map(({ value, label, Icon }) => (
+                  <button key={value} onClick={() => setPosition(value)}
+                    className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border text-xs font-medium transition-all ${position === value ? "border-white/40 bg-white/8 text-white" : "border-white/[0.06] text-zinc-500 hover:text-white"}`}>
+                    <Icon className="w-4 h-4" />{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Start #</label>
+              <input type="number" value={startNumber} min={0} max={9999}
+                onChange={(e) => setStartNumber(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full h-10 px-3 bg-zinc-900/60 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/30" />
+            </div>
+          </div>
+          <BatchPanel
+            batchFiles={batch.batchFiles}
+            addFiles={handleBatchFilesAdded}
+            removeFile={(i) => { batch.removeFile(i); if (i === 0) setBatchPreviewUrl(null); }}
+            isProcessing={batch.isProcessing}
+            progress={batch.progress}
+            error={batch.error}
+            done={batch.done}
+            onRun={() => batch.runBatch({ position, fontSize, prefix, startNumber })}
+            runLabel="Add Page Numbers to All & Download ZIP"
+            previewUrl={batchPreviewUrl}
+          />
+        </div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 

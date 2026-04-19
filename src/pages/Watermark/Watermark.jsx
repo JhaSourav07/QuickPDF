@@ -3,6 +3,9 @@ import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
+import { BatchToggle } from "../../components/ui/BatchToggle";
+import { BatchPanel } from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
 import { addWatermark } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
@@ -15,6 +18,7 @@ export function Watermark() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [batchPreviewUrl, setBatchPreviewUrl] = useState(null);
 
   const {
     isPremium,
@@ -22,6 +26,11 @@ export function Watermark() {
     incrementUsage,
     isWalletConnected,
   } = useSubscription();
+
+  const batch = useBatchProcess(
+    (f, opts) => addWatermark(f, opts.watermarkText),
+    (name) => `QuickPDF_Watermarked_${name}`
+  );
 
   const fileTooLarge =
     !isPremium &&
@@ -74,29 +83,64 @@ export function Watermark() {
     }
   };
 
+  const handleBatchFilesAdded = async (files) => {
+    batch.addFiles(files);
+    // Generate preview for first file only
+    if (files.length > 0 && !batchPreviewUrl) {
+      try {
+        const blob = await addWatermark(files[0], watermarkText);
+        setBatchPreviewUrl(URL.createObjectURL(blob));
+      } catch { /* silent — preview is optional */ }
+    }
+  };
+
   return (
     <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Stamp className="w-8 h-8" />
         </div>
-
-        <h1 className="text-4xl font-extrabold text-white mb-4">
-          Add Watermark
-        </h1>
-
+        <h1 className="text-4xl font-extrabold text-white mb-4">Add Watermark</h1>
         <p className="text-lg text-zinc-400">
           Stamp text across your document securely in your browser.
           {!isPremium && (
             <span className="block text-sm text-zinc-600 mt-1">
-              Free tier: files up to{" "}
-              {FREE_LIMITS.watermark.maxFileSizeMb} MB
+              Free tier: files up to {FREE_LIMITS.watermark.maxFileSizeMb} MB
             </span>
           )}
         </p>
+        <div className="mt-4 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); setBatchPreviewUrl(null); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
+        </div>
       </div>
 
       <div className={previewUrl ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
+        {batch.isBatchMode ? (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+            <div className="space-y-4 mb-6">
+              <label className="block text-sm font-medium text-zinc-400">Watermark Text (applied to all files)</label>
+              <input
+                type="text"
+                value={watermarkText}
+                onChange={(e) => setWatermarkText(e.target.value)}
+                placeholder="e.g., CONFIDENTIAL"
+                className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-white/20 outline-none transition-all placeholder:text-zinc-600 uppercase"
+              />
+            </div>
+            <BatchPanel
+              batchFiles={batch.batchFiles}
+              addFiles={handleBatchFilesAdded}
+              removeFile={(i) => { batch.removeFile(i); if (i === 0) setBatchPreviewUrl(null); }}
+              isProcessing={batch.isProcessing}
+              progress={batch.progress}
+              error={batch.error}
+              done={batch.done}
+              onRun={() => batch.runBatch({ watermarkText })}
+              runLabel="Watermark All & Download ZIP"
+              previewUrl={batchPreviewUrl}
+            />
+          </div>
+        ) : (
         <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
           {error && (
           <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
@@ -184,8 +228,9 @@ export function Watermark() {
           </div>
         )}
         </div>
+        )} {/* end batch.isBatchMode conditional */}
 
-        {previewUrl && (
+        {!batch.isBatchMode && previewUrl && (
           <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
             <h2 className="text-lg font-semibold text-white mb-6">
               Preview

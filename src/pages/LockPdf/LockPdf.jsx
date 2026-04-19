@@ -7,6 +7,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
+import { BatchToggle }   from "../../components/ui/BatchToggle";
+import { BatchPanel }    from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
 import { Dropzone }      from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { lockPdf }       from "../../services/pdf.service";
@@ -39,6 +42,11 @@ export function LockPdf() {
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } =
     useSubscription();
+
+  const batch = useBatchProcess(
+    (f, opts) => lockPdf(f, opts.password),
+    (name) => `locked_${name}`
+  );
 
   const LIMIT_MB      = FREE_LIMITS.lockPdf.maxFileSizeMb;
   const isOverSize    = !isPremium && !!file && file.size > mbToBytes(LIMIT_MB);
@@ -104,6 +112,9 @@ export function LockPdf() {
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Password-protect your document entirely in the browser — nothing is uploaded to any server.
         </p>
+        <div className="mt-6 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={batch.setIsBatchMode} disabled={isProcessing || batch.isProcessing} />
+        </div>
 
         {/* global limit banner */}
         <AnimatePresence>
@@ -120,12 +131,53 @@ export function LockPdf() {
       </div>
 
       {/* ── Drop zone ── */}
-      {!file ? (
+      {!file && !batch.isBatchMode ? (
         <Dropzone
           onFilesSelected={(f) => { setFile(f[0]); setDone(false); }}
           multiple={false}
           text="Drop a PDF to lock it"
         />
+      ) : batch.isBatchMode ? (
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
+          <p className="text-sm text-zinc-400">The same password will be applied to all files.</p>
+          {/* Password inputs reused */}
+          <div className="space-y-4">
+            <div className="relative">
+              <input type={showPw ? "text" : "password"} value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password for all files"
+                className="w-full h-12 px-4 pr-12 bg-zinc-900/60 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white/30"
+                autoComplete="new-password" />
+              <button type="button" onClick={() => setShowPw(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <div className="relative">
+              <input type={showConfirm ? "text" : "password"} value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Confirm password"
+                className={`w-full h-12 px-4 pr-12 bg-zinc-900/60 border rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none transition-colors ${mismatch ? "border-red-500/50" : "border-white/10 focus:border-white/30"}`}
+                autoComplete="new-password" />
+              <button type="button" onClick={() => setShowConfirm(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white">
+                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {mismatch && <p className="text-xs text-red-400">Passwords don't match</p>}
+          </div>
+          <BatchPanel
+            batchFiles={batch.batchFiles}
+            addFiles={(files) => { if (password && password === confirm) batch.addFiles(files); }}
+            removeFile={batch.removeFile}
+            isProcessing={batch.isProcessing}
+            progress={batch.progress}
+            error={batch.error || (!password || mismatch ? "Set a matching password before adding files." : null)}
+            done={batch.done}
+            onRun={() => password && password === confirm && batch.runBatch({ password })}
+            runLabel="Lock All & Download ZIP"
+          />
+        </div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 

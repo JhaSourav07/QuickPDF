@@ -4,6 +4,9 @@ import { Contrast, X, Download, Loader2, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
+import { BatchToggle } from "../../components/ui/BatchToggle";
+import { BatchPanel } from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
 import { convertToGrayscale } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
@@ -18,6 +21,23 @@ export function Grayscale() {
   const [error, setError] = useState(null);
 
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
+
+  const [batchPreviewUrl, setBatchPreviewUrl] = useState(null);
+
+  const batch = useBatchProcess(
+    (f) => convertToGrayscale(f, () => {}),
+    (name) => `Grayscale_${name}`
+  );
+
+  const handleBatchFilesAdded = async (files) => {
+    batch.addFiles(files);
+    if (files.length > 0 && !batchPreviewUrl) {
+      try {
+        const blob = await convertToGrayscale(files[0], () => {});
+        setBatchPreviewUrl(URL.createObjectURL(blob));
+      } catch { /* preview is optional */ }
+    }
+  };
 
   const fileTooLarge = !isPremium && file && file.size > mbToBytes(FREE_LIMITS.grayscale.maxFileSizeMb);
   const isLocked     = hasReachedGlobalLimit || fileTooLarge;
@@ -61,8 +81,27 @@ export function Grayscale() {
           Strip colors from your document to save printing ink. Processed locally in your browser.
           {!isPremium && <span className="block text-sm text-zinc-600 mt-1">Free tier: files up to {FREE_LIMITS.grayscale.maxFileSizeMb} MB</span>}
         </p>
+        <div className="mt-4 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); setBatchPreviewUrl(null); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
+        </div>
       </div>
 
+      {batch.isBatchMode ? (
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          <BatchPanel
+            batchFiles={batch.batchFiles}
+            addFiles={handleBatchFilesAdded}
+            removeFile={(i) => { batch.removeFile(i); if (i === 0) setBatchPreviewUrl(null); }}
+            isProcessing={batch.isProcessing}
+            progress={batch.progress}
+            error={batch.error}
+            done={batch.done}
+            onRun={() => batch.runBatch()}
+            runLabel="Convert All to Grayscale & Download ZIP"
+            previewUrl={batchPreviewUrl}
+          />
+        </div>
+      ) : (
       <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
         {error && <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">{error}</div>}
 
@@ -125,6 +164,7 @@ export function Grayscale() {
           </div>
         )}
       </div>
+      )} {/* end batch.isBatchMode conditional */}
     </div>
   );
 }
