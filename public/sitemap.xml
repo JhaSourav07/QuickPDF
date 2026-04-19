@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://quickpdff.vercel.app/</loc></url>
+  <url><loc>https://quickpdff.vercel.app/merge</loc></url>
+  <url><loc>https://quickpdff.vercel.app/split</loc></url>
+  <url><loc>https://quickpdff.vercel.app/watermark</loc></url>
+  <url><loc>https://quickpdff.vercel.app/image-to-pdf</loc></url>
+  <url><loc>https://quickpdff.vercel.app/compress</loc></url>
+  <url><loc>https://quickpdff.vercel.app/rotate</loc></url>
+  <url><loc>https://quickpdff.vercel.app/organize</loc></url>
+  <url><loc>https://quickpdff.vercel.app/pdf-to-image</loc></url>
+  <url><loc>https://quickpdff.vercel.app/grayscale</loc></url>
+  <url><loc>https://quickpdff.vercel.app/page-numbers</loc></url>
+  <url><loc>https://quickpdff.vercel.app/lock-pdf</loc></url>
+  <url><loc>https://quickpdff.vercel.app/edit-pdf</loc></url>
+</urlset>
