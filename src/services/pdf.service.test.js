@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PDFDocument } from 'pdf-lib';
-import { mergePdfs } from './pdf.service.js';
+import { mergePdfs, splitPdf } from './pdf.service.js';
+
+vi.mock('pdfjs-dist', () => ({
+  getDocument: vi.fn(),
+  GlobalWorkerOptions: { workerSrc: '' }
+}));
 
 /**
  * Creates a mock PDF File object in memory using pdf-lib.
@@ -59,5 +64,45 @@ describe('mergePdfs', () => {
 
     await expect(callMergePdfs([])).rejects.toThrow('No files provided for merging.');
     await expect(callMergePdfs(null)).rejects.toThrow('No files provided for merging.');
+  });
+});
+
+describe('splitPdf', () => {
+  it('should extract pages 2 through 4 from a 5-page PDF', async () => {
+    // 1. Arrange: Create a mock 5-page PDF
+    const file = await createMockPdfFile('5-page.pdf', 5);
+    
+    // 2. Act: Extract pages 2 through 4
+    // Assuming the signature is splitPdf(file, startPage, endPage)
+    const splitBlob = await splitPdf(file, 2, 4);
+    
+    // 3. Assert: Verify the result is a Blob of type application/pdf
+    expect(splitBlob).toBeInstanceOf(Blob);
+    expect(splitBlob.type).toBe('application/pdf');
+    
+    // Read the split blob back into pdf-lib to verify it contains exactly 3 pages
+    const arrayBuffer = await splitBlob.arrayBuffer();
+    const splitPdfDoc = await PDFDocument.load(arrayBuffer);
+    
+    expect(splitPdfDoc.getPageCount()).toBe(3);
+  });
+
+  it('should throw an "Invalid range" error for invalid page ranges', async () => {
+    // Arrange: Create a mock 5-page PDF
+    const file = await createMockPdfFile('5-page.pdf', 5);
+
+    // We wrap the call to handle synchronous or asynchronous errors
+    const callSplitPdf = async (start, end) => {
+      return await splitPdf(file, start, end);
+    };
+
+    // Test: start page is less than 1
+    await expect(callSplitPdf(0, 3)).rejects.toThrow('Invalid range');
+    
+    // Test: end page is greater than total pages (5)
+    await expect(callSplitPdf(2, 6)).rejects.toThrow('Invalid range');
+    
+    // Test: start page is greater than end page
+    await expect(callSplitPdf(4, 2)).rejects.toThrow('Invalid range');
   });
 });
