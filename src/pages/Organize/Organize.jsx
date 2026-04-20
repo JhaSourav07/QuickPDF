@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { LayoutGrid, Trash2, Download, Loader2, RotateCcw, FileWarning, GripVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone } from "../../components/pdf/Dropzone";
@@ -12,7 +12,7 @@ import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 function ThumbnailCard({ item, pageNumber, onRemove, isProcessing, isDragOver, onDragStart, onDragEnter, onDragEnd }) {
   return (
-    <motion.div key={item.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }} transition={{ duration: 0.2 }}>
+    <Motion.div key={item.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }} transition={{ duration: 0.2 }}>
       <div draggable={!isProcessing}
         onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
         onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); onDragEnter(); }}
@@ -38,7 +38,7 @@ function ThumbnailCard({ item, pageNumber, onRemove, isProcessing, isDragOver, o
         </div>
         <div className="mt-1.5 text-center text-xs font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">{pageNumber}</div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -68,13 +68,13 @@ export function Organize() {
     try {
       const pages = await getPdfThumbnails(selectedFile);
       setThumbnails(pages);
-    } catch (err) {
+    } catch {
       setError("Could not read the PDF. It may be encrypted, corrupted, or empty.");
       setFile(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setFile, setThumbnails]);
 
   const handleDragStart  = useCallback((index) => { dragItem.current = index; }, []);
   const handleDragEnter  = useCallback((index) => { if (dragItem.current === index) return; dragOverItem.current = index; setDragOverIndex(index); }, []);
@@ -84,9 +84,9 @@ export function Organize() {
     if (from === null || to === null || from === to) { dragItem.current = null; dragOverItem.current = null; return; }
     setThumbnails((prev) => { const next = [...prev]; const [moved] = next.splice(from, 1); next.splice(to, 0, moved); return next; });
     dragItem.current = null; dragOverItem.current = null;
-  }, []);
-  const handleRemovePage = useCallback((id) => setThumbnails((prev) => prev.filter((t) => t.id !== id)), []);
-  const handleReset      = useCallback(() => { setFile(null); setThumbnails([]); setError(null); setIsLoading(false); setIsProcessing(false); setDragOverIndex(null); }, []);
+  }, [setThumbnails]);
+  const handleRemovePage = useCallback((id) => setThumbnails((prev) => prev.filter((t) => t.id !== id)), [setThumbnails]);
+  const handleReset      = useCallback(() => { setFile(null); setThumbnails([]); setError(null); setIsLoading(false); setIsProcessing(false); setDragOverIndex(null); }, [setFile, setThumbnails]);
 
   const handleDownload = useCallback(async () => {
     if (!file || thumbnails.length === 0) return;
@@ -98,7 +98,7 @@ export function Organize() {
       const a = document.createElement("a"); a.href = url; a.download = `QuickPDF_Organized_${file.name}`; a.click();
       URL.revokeObjectURL(url);
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Failed to build the PDF. Please try again.");
     } finally {
       setIsProcessing(false);
@@ -119,11 +119,11 @@ export function Organize() {
       <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
         <AnimatePresence>
           {error && (
-            <motion.div key="error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            <Motion.div key="error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
               className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20 flex items-start gap-3"
             >
               <FileWarning className="w-4 h-4 mt-0.5 flex-shrink-0" />{error}
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
@@ -180,12 +180,12 @@ export function Organize() {
         )}
 
         {!isLoading && file && thumbnails.length === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 gap-4 text-zinc-500">
+          <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 gap-4 text-zinc-500">
             <FileWarning className="w-10 h-10" />
             <p className="font-medium">All pages removed</p>
             <p className="text-sm text-zinc-600">Nothing left to download. Reset to start over.</p>
             <Button variant="outline" onClick={handleReset} className="mt-2"><RotateCcw className="w-4 h-4 mr-2" />Reset</Button>
-          </motion.div>
+          </Motion.div>
         )}
       </div>
     </div>

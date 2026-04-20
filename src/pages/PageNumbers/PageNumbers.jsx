@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Hash, Download, Loader2, CheckCircle2, AlertTriangle, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { BatchToggle }   from "../../components/ui/BatchToggle";
@@ -14,9 +14,9 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 const POSITIONS = [
-  { value: "left",   label: "Left",   Icon: AlignLeft   },
-  { value: "center", label: "Center", Icon: AlignCenter },
-  { value: "right",  label: "Right",  Icon: AlignRight  },
+  { value: "left",   label: "Left"   },
+  { value: "center", label: "Center" },
+  { value: "right",  label: "Right"  },
 ];
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16];
@@ -96,14 +96,14 @@ export function PageNumbers() {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.7, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <Hash className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Page Numbers</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Auto-stamp sequential numbers on every page footer. Processed entirely in your browser.
@@ -114,13 +114,13 @@ export function PageNumbers() {
 
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               className="mt-6 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300 text-sm"
             >
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
               <span><span className="font-semibold text-white">Free limit reached.</span> Connect your wallet to keep going.</span>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -164,12 +164,12 @@ export function PageNumbers() {
           />
         </div>
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
           {/* Size warning */}
           <AnimatePresence>
             {isOverSizeLimit && !isPremium && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="mb-6 overflow-hidden"
               >
                 <div className="flex items-start gap-3 px-4 py-3.5 bg-zinc-900 border border-white/10 rounded-2xl text-sm">
@@ -179,7 +179,7 @@ export function PageNumbers() {
                     <span className="text-zinc-400">{formatFileSize(file.size)} file. Upgrade for unlimited sizes.</span>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
 
@@ -212,7 +212,7 @@ export function PageNumbers() {
             <div>
               <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">Position</label>
               <div className="grid grid-cols-3 gap-2">
-                {POSITIONS.map(({ value, label, Icon }) => (
+                {POSITIONS.map(({ value, label }) => (
                   <button
                     key={value}
                     onClick={() => setPosition(value)}
@@ -223,7 +223,7 @@ export function PageNumbers() {
                         : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:text-white hover:border-white/20",
                     ].join(" ")}
                   >
-                    <Icon className="w-5 h-5" />
+                    
                     {label}
                   </button>
                 ))}
@@ -326,7 +326,7 @@ export function PageNumbers() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </div>
   );

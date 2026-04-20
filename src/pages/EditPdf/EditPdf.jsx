@@ -1,15 +1,14 @@
+import { motion as Motion } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import {
   Pencil, Type, Highlighter, Square, Eraser,
   Undo2, Download, Loader2, X, FileEdit, CheckCircle2, PenLine, Info,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import * as pdfjsLib from "pdfjs-dist";
 import { Button }         from "../../components/ui/Button";
 import { UpgradeButton }  from "../../components/ui/UpgradeButton";
 import { Dropzone }       from "../../components/pdf/Dropzone";
-import { formatFileSize } from "../../utils/formatters";
 import { applyEdits, editPdfText } from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
@@ -17,11 +16,11 @@ import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 // ── constants ────────────────────────────────────────────────────────────────
 const RENDER_SCALE = 1.5;
 const ANN_TOOLS = [
-  { id: "draw",      Icon: Pencil,      label: "Draw"      },
-  { id: "text",      Icon: Type,        label: "Text"      },
-  { id: "highlight", Icon: Highlighter, label: "Highlight" },
-  { id: "rect",      Icon: Square,      label: "Rectangle" },
-  { id: "eraser",    Icon: Eraser,      label: "Eraser"    },
+  { id: "draw",      label: "Draw"      },
+  { id: "text",      label: "Text"      },
+  { id: "highlight", label: "Highlight" },
+  { id: "rect",      label: "Rectangle" },
+  { id: "eraser",    label: "Eraser"    },
 ];
 const COLORS = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#ec4899","#000000","#ffffff"];
 const HINTS  = { draw:"Click and drag freely", text:"Click to place a text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
@@ -122,7 +121,7 @@ export function EditPdf() {
         const tc = await page.getTextContent();
         tc.items.forEach((item, idx) => {
           if (!item.str?.trim()) return;
-          const [a, b, , d, tx, ty] = item.transform;
+          const [a, b, , , tx, ty] = item.transform;
           const fs = Math.sqrt(a*a + b*b);
           if (fs < 0.5) return;
           tItems.push({
@@ -237,10 +236,10 @@ export function EditPdf() {
   if (!file || (!pages.length && !isLoading)) return (
     <div className="max-w-3xl mx-auto py-16 px-4">
       <div className="text-center mb-12">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}
+        <Motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]">
           <FileEdit className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Edit PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">Draw, annotate, highlight — or click existing text to edit it directly in the browser.</p>
       </div>
@@ -284,10 +283,10 @@ export function EditPdf() {
         {mode === "annotate" && <>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex gap-1">
-            {ANN_TOOLS.map(({ id, Icon, label }) => (
+            {ANN_TOOLS.map(({ id, label }) => (
               <button key={id} title={label} onClick={() => setTool(id)}
                 className={`p-2 rounded-xl transition-all ${tool===id?"bg-white text-black":"text-zinc-400 hover:text-white hover:bg-white/10"}`}>
-                <Icon className="w-4 h-4" />
+                
               </button>
             ))}
           </div>

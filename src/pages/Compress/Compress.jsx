@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Minimize2, X, Download, Loader2, Zap, ShieldCheck, Gauge, Flame } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { BatchToggle } from "../../components/ui/BatchToggle";
@@ -59,7 +59,7 @@ export function Compress() {
       const savings = Math.round(((file.size - blob.size) / file.size) * 100);
       setResult({ blob, size: blob.size, savings: savings > 0 ? savings : 0 });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Compression failed. The file might be encrypted or too large.");
     } finally {
       setIsProcessing(false);
@@ -168,7 +168,7 @@ export function Compress() {
 
             <AnimatePresence>
               {result && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                   className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between"
                 >
                   <div className="flex flex-col">
@@ -176,7 +176,7 @@ export function Compress() {
                     <span className="text-emerald-500/80 text-xs mt-0.5">Saved {result.savings}% · New size: {formatFileSize(result.size)}</span>
                   </div>
                   <div className="text-emerald-400 font-bold text-xl">-{result.savings}%</div>
-                </motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
 

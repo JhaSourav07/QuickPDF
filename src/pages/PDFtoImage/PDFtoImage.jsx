@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Image as ImageIcon, X, Download, Loader2, FileArchive, Images } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { extractImagesFromPdf } from "../../services/pdf.service";
@@ -39,7 +39,7 @@ export function PdfToImage() {
       const zipBlob = await extractImagesFromPdf(file, (current, total) => setProgress({ current, total }));
       setResult({ blob: zipBlob, size: zipBlob.size });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Extraction failed. The file might be corrupted or encrypted.");
     } finally {
       setIsProcessing(false);
@@ -89,7 +89,7 @@ export function PdfToImage() {
 
             <AnimatePresence mode="wait">
               {isProcessing ? (
-                <motion.div key="processing" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                <Motion.div key="processing" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
                   className="bg-zinc-900/50 border border-white/10 rounded-xl p-6 text-center"
                 >
                   <Loader2 className="w-8 h-8 text-white animate-spin mx-auto mb-3" />
@@ -98,15 +98,15 @@ export function PdfToImage() {
                   <div className="w-full bg-zinc-800 rounded-full h-1.5 mt-4 overflow-hidden">
                     <div className="bg-white h-1.5 rounded-full transition-all duration-300 ease-out" style={{ width: `${(progress.current / progress.total) * 100}%` }} />
                   </div>
-                </motion.div>
+                </Motion.div>
               ) : result ? (
-                <motion.div key="success" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                <Motion.div key="success" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                   className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6 flex flex-col items-center justify-center text-center"
                 >
                   <FileArchive className="w-10 h-10 text-emerald-400 mb-3" />
                   <span className="text-emerald-400 font-bold text-lg">Extraction Complete!</span>
                   <span className="text-emerald-500/80 text-sm mt-1">ZIP Archive created successfully ({formatFileSize(result.size)})</span>
-                </motion.div>
+                </Motion.div>
               ) : null}
             </AnimatePresence>
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FileText, Menu, X, LogOut, Crown, Copy, Check, Star, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { useAccount, useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -51,7 +51,7 @@ function WalletMenu({ address, isPremium }) {
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
@@ -97,7 +97,7 @@ function WalletMenu({ address, isPremium }) {
               <LogOut className="w-4 h-4" />
               Disconnect wallet
             </button>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -130,7 +130,7 @@ function EditDropdown() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -148,7 +148,7 @@ function EditDropdown() {
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -179,7 +179,7 @@ function ConvertDropdown() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -197,7 +197,7 @@ function ConvertDropdown() {
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -228,7 +228,7 @@ function OptimizeDropdown() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -246,7 +246,7 @@ function OptimizeDropdown() {
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -276,7 +276,7 @@ function SecurityDropdown() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -294,7 +294,7 @@ function SecurityDropdown() {
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -377,7 +377,7 @@ export function Navbar() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -419,7 +419,7 @@ export function Navbar() {
                 )}
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </nav>

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { X, Lock, Zap, Loader2, CheckCircle2, AlertCircle, ExternalLink, ShieldCheck, ChevronRight } from "lucide-react";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
@@ -179,7 +179,7 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
         setIsSwitchingChain(false);
       }
       executePayment(selectedToken.key, selectedToken.wei);
-    } catch (err) {
+    } catch {
       // User rejected chain switch — don't proceed
       setIsSwitchingChain(false);
     }
@@ -188,13 +188,13 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div key="pw-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <Motion.div key="pw-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0"
           onClick={handleClose}
         >
           <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
 
-          <motion.div key="pw-card" initial={{ opacity: 0, y: 60, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 60, scale: 0.96 }}
+          <Motion.div key="pw-card" initial={{ opacity: 0, y: 60, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 60, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg bg-[#070707] border border-white/[0.08] rounded-[2rem] overflow-hidden shadow-[0_0_120px_rgba(255,255,255,0.04)]"
@@ -213,20 +213,20 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
               <AnimatePresence mode="wait">
 
                 {isSuccess ? (
-                  <motion.div key="success" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                  <Motion.div key="success" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center py-6 text-center"
                   >
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
+                    <Motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
                       className="w-20 h-20 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center mb-5"
                     >
                       <CheckCircle2 className="w-10 h-10 text-white" />
-                    </motion.div>
+                    </Motion.div>
                     <h2 className="text-2xl font-black tracking-tighter text-white uppercase mb-2">Lifetime Access Unlocked!</h2>
                     <p className="text-zinc-400 text-sm">All limits removed. Your files, your RAM, forever.</p>
-                  </motion.div>
+                  </Motion.div>
 
                 ) : isProcessing ? (
-                  <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-6 text-center">
+                  <Motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-6 text-center">
                     <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
                       <Loader2 className="w-8 h-8 text-white animate-spin" />
                     </div>
@@ -235,10 +235,10 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
                     </h2>
                     <p className="text-zinc-500 text-sm max-w-xs">{STAGE_COPY[stage]?.sub}</p>
                     <TxLink txHash={txHash} chainId={chainId} />
-                  </motion.div>
+                  </Motion.div>
 
                 ) : (
-                  <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <Motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 
                     <div className="flex items-start gap-4 mb-6">
                       <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -315,7 +315,7 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
 
                         <AnimatePresence>
                           {selectedToken && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                            <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                               className="px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-xs text-zinc-400 space-y-1.5"
                             >
                               <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
                                   Your wallet will be asked to switch to {selectedToken.network} first.
                                 </p>
                               )}
-                            </motion.div>
+                            </Motion.div>
                           )}
                         </AnimatePresence>
 
@@ -358,12 +358,12 @@ export function PaywallModal({ isOpen, onClose, reason = "size", limitLabel, isP
                       <ShieldCheck className="w-3 h-3" />
                       Files never leave your browser. Only wallet entitlement is stored.
                     </p>
-                  </motion.div>
+                  </Motion.div>
                 )}
               </AnimatePresence>
             </div>
-          </motion.div>
-        </motion.div>
+          </Motion.div>
+        </Motion.div>
       )}
     </AnimatePresence>
   );
