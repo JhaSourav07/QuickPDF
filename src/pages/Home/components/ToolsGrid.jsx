@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 import {
   Layers,
@@ -30,7 +30,7 @@ export function ToolsGrid() {
   return (
     <div className="grid md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto mb-32">
       {/* 1. Merge Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -55,10 +55,10 @@ export function ToolsGrid() {
             Open Merge Tool <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 2. Split Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -84,10 +84,10 @@ export function ToolsGrid() {
             Open Split Tool <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 3. Watermark Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -113,10 +113,10 @@ export function ToolsGrid() {
             Open Watermark Tool <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 4. Image to PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -142,10 +142,10 @@ export function ToolsGrid() {
             Open Image to PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 5. Compress PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -170,10 +170,10 @@ export function ToolsGrid() {
             Open Compress PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 6. Rotate PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -198,10 +198,10 @@ export function ToolsGrid() {
             Open Rotate PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 7. Organize PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -226,10 +226,10 @@ export function ToolsGrid() {
             Open Organize PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 8. PDF to Images Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -254,10 +254,10 @@ export function ToolsGrid() {
             Open PDF to Images <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 9. Grayscale Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -282,10 +282,10 @@ export function ToolsGrid() {
             Open Grayscale PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 10. Page Numbers Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -310,10 +310,10 @@ export function ToolsGrid() {
             Open Page Numbers <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 11. Lock PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -338,10 +338,10 @@ export function ToolsGrid() {
             Open Lock PDF <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
 
       {/* 12. Edit PDF Card */}
-      <motion.div
+      <Motion.div
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
@@ -366,7 +366,7 @@ export function ToolsGrid() {
             Open PDF Editor <span className="ml-2">→</span>
           </div>
         </Link>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }
