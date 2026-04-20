@@ -9,10 +9,12 @@ import {
   collection, onSnapshot, doc, updateDoc, deleteDoc,
   query, orderBy,
 } from "firebase/firestore";
-import { db } from "../../lib/firebase";
-
-
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
+import { 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut 
+} from "firebase/auth";
+import { db, auth } from "../../lib/firebase";
 
 const TYPE_META = {
   bug:         { label: "Bug",         colorClass: "text-red-400",   bgClass: "bg-red-500/10 border-red-500/20"    },
@@ -31,14 +33,24 @@ function Stars({ n }) {
   return <span className="text-amber-400 text-sm">{"★".repeat(n)}{"☆".repeat(5 - n)}</span>;
 }
 
-function LoginScreen({ onAuth }) {
-  const [pw, setPw]   = useState("");
-  const [err, setErr] = useState(false);
+function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [pw, setPw]       = useState("");
+  const [err, setErr]     = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (pw === ADMIN_PASSWORD) { onAuth(); }
-    else { setErr(true); setTimeout(() => setErr(false), 1500); }
+    setLoading(true);
+    setErr(false);
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+    } catch (err) {
+      setErr(true);
+      setTimeout(() => setErr(false), 3000);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -53,17 +65,24 @@ function LoginScreen({ onAuth }) {
           <p className="text-zinc-500 text-sm mt-1">QuickPDF feedback dashboard</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
-          <input
-            type="password" value={pw} onChange={e => setPw(e.target.value)}
-            placeholder="Admin password" autoFocus
-            className={`w-full h-12 px-4 bg-zinc-900 border rounded-xl text-white text-sm placeholder-zinc-600 outline-none transition-all
-              ${err ? "border-red-500/70 animate-pulse" : "border-white/10 focus:border-white/30"}`}
-          />
-          <button type="submit"
-            className="w-full h-12 flex items-center justify-center gap-2 bg-white text-black font-bold rounded-xl hover:bg-zinc-100 transition-all text-sm">
-            <LogIn className="w-4 h-4" /> Sign In
+          <div className="space-y-2">
+            <input
+              type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="Admin email" required
+              className="w-full h-12 px-4 bg-zinc-900 border border-white/10 rounded-xl text-white text-sm placeholder-zinc-600 outline-none focus:border-white/30 transition-all"
+            />
+            <input
+              type="password" value={pw} onChange={e => setPw(e.target.value)}
+              placeholder="Password" required
+              className={`w-full h-12 px-4 bg-zinc-900 border rounded-xl text-white text-sm placeholder-zinc-600 outline-none transition-all
+                ${err ? "border-red-500/70 animate-pulse" : "border-white/10 focus:border-white/30"}`}
+            />
+          </div>
+          <button type="submit" disabled={loading}
+            className="w-full h-12 flex items-center justify-center gap-2 bg-white text-black font-bold rounded-xl hover:bg-zinc-100 transition-all text-sm disabled:opacity-50">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><LogIn className="w-4 h-4" /> Sign In</>}
           </button>
-          {err && <p className="text-center text-red-400 text-xs">Incorrect password</p>}
+          {err && <p className="text-center text-red-400 text-xs">Invalid credentials</p>}
         </form>
       </Motion.div>
     </div>
@@ -153,12 +172,21 @@ function FeedbackCard({ item, onToggleResolved, onDelete }) {
 }
 
 export function Admin() {
-  const [authed, setAuthed]             = useState(() => sessionStorage.getItem("qp_admin") === "1");
+  const [authed, setAuthed]             = useState(false);
+  const [authLoading, setAuthLoading]   = useState(true);
   const [items, setItems]               = useState([]);
   const [loading, setLoading]           = useState(true);
   const [filterType, setFilterType]     = useState("all");
   const [filterStatus, setFilterStatus] = useState("open");
   const [sortOrder, setSortOrder]       = useState("desc");
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setAuthed(!!user);
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (!authed) return;
@@ -170,8 +198,6 @@ export function Admin() {
     return unsub;
   }, [authed, sortOrder]);
 
-  function handleAuth() { sessionStorage.setItem("qp_admin", "1"); setAuthed(true); }
-
   async function toggleResolved(id, current) {
     await updateDoc(doc(db, "feedback", id), { resolved: !current });
   }
@@ -179,7 +205,15 @@ export function Admin() {
     await deleteDoc(doc(db, "feedback", id));
   }
 
-  if (!authed) return <LoginScreen onAuth={handleAuth} />;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    );
+  }
+
+  if (!authed) return <LoginScreen />;
 
   // Stats
   const total     = items.length;
@@ -212,7 +246,7 @@ export function Admin() {
             <span className="text-zinc-600 text-sm hidden sm:block">· QuickPDF Feedback</span>
           </div>
           <button
-            onClick={() => { sessionStorage.removeItem("qp_admin"); setAuthed(false); }}
+            onClick={() => signOut(auth)}
             className="text-xs text-zinc-500 hover:text-white transition-colors">
             Sign out
           </button>
