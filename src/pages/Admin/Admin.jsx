@@ -49,7 +49,7 @@ function LoginScreen({ onAuth }) {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white text-black mb-4">
             <Shield className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Admin Panel</h1>
+          <h1 className="text-2xl font-black text-[var(--color-primary)] tracking-tight">Admin Panel</h1>
           <p className="text-zinc-500 text-sm mt-1">QuickPDF feedback dashboard</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
@@ -77,7 +77,7 @@ function StatCard({ label, value, sub, color }) {
         
       </div>
       <div>
-        <p className="text-2xl font-black text-white">{value}</p>
+        <p className="text-2xl font-black text-[var(--color-primary)]">{value}</p>
         <p className="text-xs text-zinc-500 mt-0.5">{label}</p>
         {sub && <p className="text-xs text-zinc-700 mt-0.5">{sub}</p>}
       </div>

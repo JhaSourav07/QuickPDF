@@ -240,7 +240,7 @@ export function EditPdf() {
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]">
           <FileEdit className="w-10 h-10" />
         </Motion.div>
-        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Edit PDF</h1>
+        <h1 className="text-5xl font-black text-[var(--color-primary)] mb-4 tracking-tighter uppercase">Edit PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">Draw, annotate, highlight — or click existing text to edit it directly in the browser.</p>
       </div>
       {error && <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-2xl border border-red-500/20 text-sm">{error}</div>}

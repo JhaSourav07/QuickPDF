@@ -72,7 +72,7 @@ export function PageNumbers() {
         >
           <Hash className="w-10 h-10" />
         </Motion.div>
-        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Page Numbers</h1>
+        <h1 className="text-5xl font-black text-[var(--color-primary)] mb-4 tracking-tighter uppercase">Page Numbers</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Auto-stamp sequential numbers on every page footer. Processed entirely in your browser.
         </p>

@@ -211,7 +211,7 @@ export function Rotate() {
         >
           <RefreshCw className="w-10 h-10" />
         </Motion.div>
-        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Rotate PDF</h1>
+        <h1 className="text-5xl font-black text-[var(--color-primary)] mb-4 tracking-tighter uppercase">Rotate PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Rotate individual pages or the whole document. Processed entirely in your browser.
         </p>

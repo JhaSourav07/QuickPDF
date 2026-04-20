@@ -79,7 +79,7 @@ export function Split() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <SplitSquareHorizontal className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-extrabold text-white mb-4">Split PDF</h1>
+        <h1 className="text-4xl font-extrabold text-[var(--color-primary)] mb-4">Split PDF</h1>
         <p className="text-lg text-zinc-400">
           Extract a specific range of pages from your PDF securely in your browser.
           {!isPremium && (

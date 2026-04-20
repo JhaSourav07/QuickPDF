@@ -81,9 +81,9 @@ export function Watermark() {
           <Stamp className="w-8 h-8" />
         </div>
 
-        <h1 className="text-4xl font-extrabold text-white mb-4">
-          Add Watermark
-        </h1>
+          <h1 className="text-4xl font-extrabold text-[var(--color-primary)] mb-4">
+            Add Watermark
+          </h1>
 
         <p className="text-lg text-zinc-400">
           Stamp text across your document securely in your browser.

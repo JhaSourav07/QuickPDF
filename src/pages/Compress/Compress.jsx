@@ -68,7 +68,7 @@ export function Compress() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Minimize2 className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-extrabold text-white mb-4">Compress PDF</h1>
+        <h1 className="text-4xl font-extrabold text-[var(--color-primary)] mb-4">Compress PDF</h1>
         <p className="text-lg text-zinc-400">
           Trade quality for portability. Reduce file size directly in your browser.
           {!isPremium && (

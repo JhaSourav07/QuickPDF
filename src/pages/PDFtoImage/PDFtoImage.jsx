@@ -57,7 +57,7 @@ export function PdfToImage() {
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4"><Images className="w-8 h-8" /></div>
-        <h1 className="text-4xl font-extrabold text-white mb-4">PDF to Images</h1>
+        <h1 className="text-4xl font-extrabold text-[var(--color-primary)] mb-4">PDF to Images</h1>
         <p className="text-lg text-zinc-400">
           Extract every page of your PDF into high-resolution JPEGs. Downloaded instantly as a ZIP file.
           {!isPremium && <span className="block text-sm text-zinc-600 mt-1">Free tier: files up to {FREE_LIMITS.pdfToImage.maxFileSizeMb} MB</span>}
