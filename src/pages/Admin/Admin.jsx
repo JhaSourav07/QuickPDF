@@ -4,7 +4,7 @@ import {
   CheckCircle2, Circle, Trash2, RefreshCw, Mail,
   Filter, BarChart3, MessageSquare,
 } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import {
   collection, onSnapshot, doc, updateDoc, deleteDoc,
   query, orderBy,
@@ -43,7 +43,7 @@ function LoginScreen({ onAuth }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-black">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+      <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white text-black mb-4">
@@ -65,7 +65,7 @@ function LoginScreen({ onAuth }) {
           </button>
           {err && <p className="text-center text-red-400 text-xs">Incorrect password</p>}
         </form>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }
@@ -95,7 +95,7 @@ function FeedbackCard({ item, onToggleResolved, onDelete }) {
   }
 
   return (
-    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
+    <Motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
       className={`bg-[#0a0a0a] border rounded-2xl p-5 space-y-3 transition-all
         ${item.resolved ? "border-white/[0.04] opacity-60" : "border-white/10"}`}>
 
@@ -148,7 +148,7 @@ function FeedbackCard({ item, onToggleResolved, onDelete }) {
           {item.userAgent?.split(")")[0]?.replace("Mozilla/5.0 (", "")}
         </span>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }
 

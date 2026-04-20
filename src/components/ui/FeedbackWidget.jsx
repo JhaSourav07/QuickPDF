@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { MessageSquarePlus, X, Bug, Lightbulb, Star, Send, CheckCircle2, Loader2, ChevronDown } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -70,12 +70,12 @@ export function FeedbackWidget() {
       {/* Backdrop + Modal */}
       <AnimatePresence>
         {open && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
             onClick={e => { if (e.target === e.currentTarget) { setOpen(false); setTimeout(reset, 300); } }}
           >
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.97 }}
@@ -100,9 +100,9 @@ export function FeedbackWidget() {
               {sent ? (
                 /* ── Success state ── */
                 <div className="flex flex-col items-center justify-center py-14 gap-4">
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
+                  <Motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
                     <CheckCircle2 className="w-14 h-14 text-emerald-400" />
-                  </motion.div>
+                  </Motion.div>
                   <p className="text-white font-semibold text-lg">Thank you!</p>
                   <p className="text-zinc-500 text-sm text-center px-8">Your feedback has been received. We read every submission.</p>
                 </div>
@@ -194,8 +194,8 @@ export function FeedbackWidget() {
                   </button>
                 </form>
               )}
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </>

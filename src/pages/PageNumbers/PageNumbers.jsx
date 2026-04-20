@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Hash, Download, Loader2, CheckCircle2, AlertTriangle, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
@@ -64,14 +64,14 @@ export function PageNumbers() {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.7, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <Hash className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Page Numbers</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Auto-stamp sequential numbers on every page footer. Processed entirely in your browser.
@@ -79,13 +79,13 @@ export function PageNumbers() {
 
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               className="mt-6 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300 text-sm"
             >
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
               <span><span className="font-semibold text-white">Free limit reached.</span> Connect your wallet to keep going.</span>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -93,12 +93,12 @@ export function PageNumbers() {
       {!file ? (
         <Dropzone onFilesSelected={(f) => { setFile(f[0]); setDone(false); }} multiple={false} text="Drop a PDF to number its pages" />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
           {/* Size warning */}
           <AnimatePresence>
             {isOverSizeLimit && !isPremium && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="mb-6 overflow-hidden"
               >
                 <div className="flex items-start gap-3 px-4 py-3.5 bg-zinc-900 border border-white/10 rounded-2xl text-sm">
@@ -108,7 +108,7 @@ export function PageNumbers() {
                     <span className="text-zinc-400">{formatFileSize(file.size)} file. Upgrade for unlimited sizes.</span>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
 
@@ -255,7 +255,7 @@ export function PageNumbers() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </div>
   );

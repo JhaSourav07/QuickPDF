@@ -34,7 +34,7 @@ export function AnimatedBackground() {
       />
 
       {/* 2. The Interactive Mouse Spotlight */}
-      <motion.div
+      <Motion.div
         className="absolute w-[800px] h-[800px] bg-white/[0.04] rounded-full blur-[100px]"
         // The x and y subtract half the width/height (400px) so the cursor is perfectly in the center of the glow
         animate={{

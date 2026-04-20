@@ -35,7 +35,7 @@ export function Features() {
 
   return (
     <div className="w-full max-w-5xl mx-auto border-t border-white/10 pt-24 mb-24">
-      <motion.div 
+      <Motion.div 
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -43,7 +43,7 @@ export function Features() {
         className="grid md:grid-cols-3 gap-12 text-center md:text-left"
       >
         {features.map((feature, index) => (
-          <motion.div key={index} variants={itemVariants} className="flex flex-col items-center md:items-start group">
+          <Motion.div key={index} variants={itemVariants} className="flex flex-col items-center md:items-start group">
             <div className="w-14 h-14 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 group-hover:border-white/30 transition-colors duration-300">
               {feature.icon}
             </div>
@@ -51,9 +51,9 @@ export function Features() {
             <p className="text-base text-zinc-400 leading-relaxed font-light">
               {feature.description}
             </p>
-          </motion.div>
+          </Motion.div>
         ))}
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

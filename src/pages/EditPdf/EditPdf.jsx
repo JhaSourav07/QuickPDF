@@ -1,3 +1,4 @@
+import { motion as Motion } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import {
@@ -235,10 +236,10 @@ export function EditPdf() {
   if (!file || (!pages.length && !isLoading)) return (
     <div className="max-w-3xl mx-auto py-16 px-4">
       <div className="text-center mb-12">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}
+        <Motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]">
           <FileEdit className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Edit PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">Draw, annotate, highlight — or click existing text to edit it directly in the browser.</p>
       </div>
