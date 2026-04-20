@@ -27,18 +27,30 @@ export function Hero() {
         className="relative z-10 space-y-8"
       >
         <Motion.div variants={item}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-zinc-300 text-xs font-mono uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-colors cursor-default shadow-xl">
-            <ShieldCheck className="w-4 h-4 text-white" />
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-zinc-300 text-xs font-mono uppercase tracking-widest backdrop-blur-md hover:bg-white/10 transition-colors cursor-default shadow-xl"
+            style={{ color: 'var(--client-side-processing-color, #d4d4d8)' }}
+          >
+            <ShieldCheck className="w-4 h-4" style={{ color: 'inherit' }} />
             Client-Side Processing
           </div>
+          <style>{`
+            .light [style*='--client-side-processing-color'] {
+              --client-side-processing-color: #000 !important;
+            }
+          `}</style>
         </Motion.div>
 
         <Motion.h1 
           variants={item}
-          className="text-6xl md:text-8xl font-extrabold text-white tracking-tighter leading-[1.1]"
+          className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[1.1] flex flex-col items-center justify-center text-center w-full"
         >
-          PDF tools that <br className="hidden md:block" />
-          respect your <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-zinc-600">privacy.</span>
+          <span className="dark:text-white text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-zinc-600">
+            PDF tools that
+          </span>
+          <span className="dark:text-white text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-zinc-600">
+            respect your privacy.
+          </span>
         </Motion.h1>
 
         <Motion.p 

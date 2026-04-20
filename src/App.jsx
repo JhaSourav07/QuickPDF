@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { Navbar } from "./components/layout/Navbar";
 import { PageContainer } from "./components/layout/PageContainer";
-import { AnimatedBackground } from "./components/ui/AnimatedBackground";
+import { AnimatedBackground } from "./components/ui/AnimatedBackground";        
 import { FeedbackWidget } from "./components/ui/FeedbackWidget";
 
 // pages
@@ -22,9 +22,20 @@ import { LockPdf }     from "./pages/LockPdf/LockPdf";
 import { EditPdf }     from "./pages/EditPdf/EditPdf";
 import { Admin }       from "./pages/Admin/Admin";
 
+import { useTheme } from "./hooks/useTheme";
+
 function App() {
+  const { theme } = useTheme();
+
   return (
-    <div className="relative flex flex-col min-h-screen bg-black text-white overflow-x-hidden w-full">
+    <div
+      className="relative flex flex-col min-h-screen overflow-x-hidden w-full"  
+      style={{
+        background: "var(--color-background)",
+        color: "var(--color-primary)",
+        transition: "background 0.3s, color 0.3s"
+      }}
+    >
       <AnimatedBackground />
       <div className="relative z-10 flex flex-col flex-grow w-full">
         <Navbar />

@@ -45,11 +45,11 @@ export function Features() {
       >
         {features.map((feature, index) => (
           <Motion.div key={index} variants={itemVariants} className="flex flex-col items-center md:items-start group">
-            <div className="w-14 h-14 rounded-2xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 group-hover:border-white/30 transition-colors duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center mb-6 group-hover:border-[var(--color-border-hover)] transition-colors duration-300">
               {feature.icon}
             </div>
-            <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-            <p className="text-base text-zinc-400 leading-relaxed font-light">
+            <h3 className="text-xl font-semibold text-[var(--color-primary)] mb-3">{feature.title}</h3>
+            <p className="text-base text-[var(--color-muted)] leading-relaxed font-light">
               {feature.description}
             </p>
           </Motion.div>
