@@ -4,6 +4,9 @@ import { Minimize2, X, Download, Loader2, Zap, ShieldCheck, Gauge, Flame } from 
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
+import { BatchToggle } from "../../components/ui/BatchToggle";
+import { BatchPanel } from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
 import { compressWithQuality } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
@@ -18,6 +21,15 @@ export function Compress() {
   const [error, setError] = useState(null);
 
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
+
+  const batch = useBatchProcess(
+    (f, opts) => compressWithQuality(f, opts.quality),
+    (name) => `QuickPDF_Compressed_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(FREE_LIMITS.compress.maxFileSizeMb)),
+      onAfterEach: incrementUsage,
+    }
+  );
 
   const fileTooLarge = !isPremium && file && file.size > mbToBytes(FREE_LIMITS.compress.maxFileSizeMb);
   const isLocked     = hasReachedGlobalLimit || fileTooLarge;
@@ -77,9 +89,47 @@ export function Compress() {
             </span>
           )}
         </p>
+        <div className="mt-4 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={(v) => { batch.setIsBatchMode(v); batch.clearFiles(); }} disabled={isProcessing || batch.isProcessing} />
+        </div>
       </div>
 
-      <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+      {batch.isBatchMode ? (
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          {isLocked && (
+            <div className="mb-6">
+              <UpgradeButton reason={lockReason} limitLabel={lockLabel} isWalletConnected={isWalletConnected} isPremium={isPremium} className="w-full" />
+            </div>
+          )}
+          <div className="space-y-3 mb-6">
+            <label className="block text-sm font-medium text-zinc-400 mb-2">Compression Level (applied to all files)</label>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {options.map((opt) => (
+                <button key={opt.id} onClick={() => setLevel(opt.id)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all ${level === opt.id ? "bg-white/10 border-white/30 text-white" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-900/60 hover:border-white/15"}`}
+                >
+                  <div className="mb-2">{opt.icon}</div>
+                  <span className="font-semibold text-sm">{opt.label}</span>
+                  <span className="text-xs opacity-70 mt-1">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <BatchPanel
+            batchFiles={batch.batchFiles}
+            addFiles={batch.addFiles}
+            removeFile={batch.removeFile}
+            isProcessing={batch.isProcessing}
+            progress={batch.progress}
+            error={batch.error}
+            done={batch.done}
+            onRun={() => batch.runBatch({ quality: options.find(o => o.id === level).val })}
+            runLabel="Compress All & Download ZIP"
+            runDisabled={isLocked}
+          />
+        </div>
+      ) : (
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">{error}</div>
         )}
@@ -149,7 +199,8 @@ export function Compress() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )} {/* end batch.isBatchMode conditional */}
     </div>
   );
 }

@@ -4,7 +4,10 @@ import { RotateCw, RotateCcw, Download, Loader2, RefreshCw, AlertTriangle, Check
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }         from "../../components/ui/Button";
 import { UpgradeButton }  from "../../components/ui/UpgradeButton";
-import { rotatePdfPerPage } from "../../services/pdf.service";
+import { BatchToggle }    from "../../components/ui/BatchToggle";
+import { BatchPanel }     from "../../components/pdf/BatchPanel";
+import { useBatchProcess } from "../../hooks/useBatchProcess";
+import { rotatePdfPerPage, rotatePdf } from "../../services/pdf.service";
 import { Dropzone }       from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -138,6 +141,17 @@ export function Rotate() {
   const sentinelRef = useRef(null);
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } = useSubscription();
+
+  const [batchAngle, setBatchAngle] = useState(90);
+  const batch = useBatchProcess(
+    (f, opts) => rotatePdf(f, opts.angle),
+    (name) => `rotated_${name}`,
+    {
+      canProcess: (f) => !hasReachedGlobalLimit && (isPremium || f.size <= mbToBytes(ROTATE_LIMIT_MB)),
+      onAfterEach: incrementUsage,
+    }
+  );
+
   const ROTATE_LIMIT_MB = FREE_LIMITS.rotate.maxFileSizeMb;
   const isOverSizeLimit = !isPremium && !!file && file.size > mbToBytes(ROTATE_LIMIT_MB);
   const isLocked        = !isPremium && (isOverSizeLimit || hasReachedGlobalLimit);
@@ -215,6 +229,9 @@ export function Rotate() {
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Rotate individual pages or the whole document. Processed entirely in your browser.
         </p>
+        <div className="mt-6 flex justify-center">
+          <BatchToggle isBatchMode={batch.isBatchMode} onChange={batch.setIsBatchMode} disabled={isProcessing || batch.isProcessing} />
+        </div>
 
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
@@ -229,7 +246,38 @@ export function Rotate() {
         </AnimatePresence>
       </div>
 
-      {!file ? (
+      {batch.isBatchMode ? (
+        <div className="bg-zinc-900/50 border border-white/[0.06] rounded-2xl p-6 space-y-6">
+          {isLocked && (
+            <UpgradeButton reason={paywallReason} limitLabel={`${ROTATE_LIMIT_MB} MB`} isWalletConnected={isConnected} isPremium={isPremium} className="w-full" />
+          )}
+          <div>
+            <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">
+              Rotation angle (applied to all pages of all files)
+            </label>
+            <div className="flex gap-3">
+              {[-90, 90, 180].map((angle) => (
+                <button key={angle} onClick={() => setBatchAngle(angle)}
+                  className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${batchAngle === angle ? "border-white/40 bg-white/8 text-white" : "border-white/[0.06] text-zinc-500 hover:text-white"}`}>
+                  {angle > 0 ? `+${angle}°` : `${angle}°`}
+                </button>
+              ))}
+            </div>
+          </div>
+          <BatchPanel
+            batchFiles={batch.batchFiles}
+            addFiles={batch.addFiles}
+            removeFile={batch.removeFile}
+            isProcessing={batch.isProcessing}
+            progress={batch.progress}
+            error={batch.error}
+            done={batch.done}
+            onRun={() => batch.runBatch({ angle: batchAngle })}
+            runLabel="Rotate All & Download ZIP"
+            runDisabled={isLocked}
+          />
+        </div>
+      ) : !file ? (
         <Dropzone onFilesSelected={(f) => setFile(f[0])} multiple={false} text="Drop PDF to rotate" />
       ) : (
         <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
