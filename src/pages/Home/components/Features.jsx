@@ -1,6 +1,6 @@
 import React from 'react';
 import { Zap, Shield, FileCheck } from 'lucide-react';
-import { motion as Motion } from "framer-motion";
+import { motion as Motion } from 'framer-motion';
 
 export function Features() {
   const features = [

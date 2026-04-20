@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion as Motion } from "framer-motion";
+import { motion as Motion } from 'framer-motion';
 
 export function AnimatedBackground() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
