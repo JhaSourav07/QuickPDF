@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FileText, Menu, X, LogOut, Crown, Copy, Check, Star, ChevronDown } from "lucide-react";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { useAccount, useDisconnect } from "wagmi";
@@ -111,6 +110,24 @@ function EditDropdown() {
   const [locked, setLocked] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    setIsOpen(false);
+    setLocked(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
+
   const tools = [
     { name: "Merge", path: "/merge" },
     { name: "Split", path: "/split" },
@@ -127,7 +144,11 @@ function EditDropdown() {
       }}
     >
       <button
-        onClick={() => setLocked(!locked)}
+       onClick={() => {
+  window.dispatchEvent(new Event("closeAllDropdowns"));
+  setIsOpen((prev) => !prev);
+  setLocked((prev) => !prev);
+}}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Edit
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -147,6 +168,10 @@ function EditDropdown() {
                 <Link
                   key={tool.name}
                   to={tool.path}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
                   className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
@@ -166,6 +191,24 @@ function ConvertDropdown() {
   const [locked, setLocked] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    setIsOpen(false);
+    setLocked(false);
+  }, [location.pathname]);
+
+
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
   const tools = [
     { name: "Image To PDF", path: "/image-to-pdf" },
     { name: "PDF To Image", path: "/pdf-to-image" },
@@ -180,7 +223,11 @@ function ConvertDropdown() {
       }}
     >
       <button
-        onClick={() => setLocked(!locked)}
+        onClick={() => {
+  window.dispatchEvent(new Event("closeAllDropdowns"));
+  setIsOpen((prev) => !prev);
+  setLocked((prev) => !prev);
+}}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Convert
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -200,6 +247,10 @@ function ConvertDropdown() {
                 <Link
                   key={tool.name}
                   to={tool.path}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
                   className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
@@ -219,6 +270,24 @@ function OptimizeDropdown() {
   const [locked, setLocked] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    setIsOpen(false);
+    setLocked(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
+
   const tools = [
     { name: "Compress", path: "/compress" },
     { name: "Grayscale", path: "/grayscale" },
@@ -233,7 +302,11 @@ function OptimizeDropdown() {
       }}
     >
       <button
-        onClick={() => setLocked(!locked)}
+       onClick={() => {
+  window.dispatchEvent(new Event("closeAllDropdowns"));
+  setIsOpen((prev) => !prev);
+  setLocked((prev) => !prev);
+}}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Optimize
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -253,6 +326,10 @@ function OptimizeDropdown() {
                 <Link
                   key={tool.name}
                   to={tool.path}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
                   className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
@@ -272,6 +349,23 @@ function SecurityDropdown() {
   const [locked, setLocked] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    setIsOpen(false);
+    setLocked(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
   const tools = [
     { name: "Watermark", path: "/watermark" },
   ];
@@ -285,7 +379,11 @@ function SecurityDropdown() {
       }}
     >
       <button
-        onClick={() => setLocked(!locked)}
+        onClick={() => {
+  window.dispatchEvent(new Event("closeAllDropdowns"));
+  setIsOpen((prev) => !prev);
+  setLocked((prev) => !prev);
+}}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Security
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -305,6 +403,10 @@ function SecurityDropdown() {
                 <Link
                   key={tool.name}
                   to={tool.path}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
                   className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"
                     }`}
                 >
