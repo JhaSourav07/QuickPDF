@@ -109,12 +109,14 @@ function EditDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const location = useLocation();
+  const shouldReset = location.pathname;
 
   useEffect(() => {
-    setIsOpen(false);
-    setLocked(false);
-  }, [location.pathname]);
-
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
   useEffect(() => {
     function handleCloseAll() {
       setIsOpen(false);
@@ -144,11 +146,11 @@ function EditDropdown() {
       }}
     >
       <button
-       onClick={() => {
-  window.dispatchEvent(new Event("closeAllDropdowns"));
-  setIsOpen((prev) => !prev);
-  setLocked((prev) => !prev);
-}}
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Edit
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -190,13 +192,14 @@ function ConvertDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const location = useLocation();
+  const shouldReset = location.pathname;
 
   useEffect(() => {
-    setIsOpen(false);
-    setLocked(false);
-  }, [location.pathname]);
-
-
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
   useEffect(() => {
     function handleCloseAll() {
       setIsOpen(false);
@@ -224,10 +227,10 @@ function ConvertDropdown() {
     >
       <button
         onClick={() => {
-  window.dispatchEvent(new Event("closeAllDropdowns"));
-  setIsOpen((prev) => !prev);
-  setLocked((prev) => !prev);
-}}
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Convert
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -269,12 +272,14 @@ function OptimizeDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const location = useLocation();
+  const shouldReset = location.pathname;
 
   useEffect(() => {
-    setIsOpen(false);
-    setLocked(false);
-  }, [location.pathname]);
-
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
   useEffect(() => {
     function handleCloseAll() {
       setIsOpen(false);
@@ -302,11 +307,11 @@ function OptimizeDropdown() {
       }}
     >
       <button
-       onClick={() => {
-  window.dispatchEvent(new Event("closeAllDropdowns"));
-  setIsOpen((prev) => !prev);
-  setLocked((prev) => !prev);
-}}
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Optimize
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
@@ -348,12 +353,14 @@ function SecurityDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const location = useLocation();
+  const shouldReset = location.pathname;
 
   useEffect(() => {
-    setIsOpen(false);
-    setLocked(false);
-  }, [location.pathname]);
-
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
   useEffect(() => {
     function handleCloseAll() {
       setIsOpen(false);
@@ -380,10 +387,10 @@ function SecurityDropdown() {
     >
       <button
         onClick={() => {
-  window.dispatchEvent(new Event("closeAllDropdowns"));
-  setIsOpen((prev) => !prev);
-  setLocked((prev) => !prev);
-}}
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
         className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Security
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
