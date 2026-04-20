@@ -305,7 +305,7 @@ function SecurityDropdown() {
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { address, isConnected } = useAccount();
-  const isPremium = false; // Mocking or getting from some other place if useSubscription is not found
+  const isPremium = false; // test // Mocking or getting from some other place if useSubscription is not found
   const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
