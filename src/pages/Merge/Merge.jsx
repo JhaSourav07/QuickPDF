@@ -112,9 +112,9 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
       </div>
 
       {/* Name + size */}
-      <div className="w-full px-1">
+      <div className="w-full px-1"> 
         <p className="text-[11px] text-zinc-300 font-medium truncate">{item.name}</p>
-        <p className="text-[10px] text-zinc-600">{formatFileSize(item.size)}</p>
+        <p className="text-[10px] text-zinc-500">{formatFileSize(item.size)}{item.numPages && ` . ${item.numPages} pages `}</p>
       </div>
 
       {/* Remove */}

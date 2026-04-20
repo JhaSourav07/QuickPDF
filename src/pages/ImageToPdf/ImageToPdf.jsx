@@ -10,6 +10,7 @@ import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS }   from "../../config/limits";
 
+
 let _uid = 0;
 function makeItem(file) {
   const url = URL.createObjectURL(file);
