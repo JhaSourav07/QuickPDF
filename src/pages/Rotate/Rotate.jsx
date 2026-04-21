@@ -43,7 +43,7 @@ function usePdfPages(file) {
     })();
 
     return () => { cancelled = true; };
-  }, [file]); // eslint-disable-line
+  }, [file]);  
 
   async function loadBatch(pdf, from, to, cancelled) {
     setIsLoading(true);
@@ -76,7 +76,7 @@ function usePdfPages(file) {
     if (from > pdf.numPages) return;
     const to = Math.min(from + PAGE_BATCH - 1, pdf.numPages);
     loadBatch(pdf, from, to, false);
-  }, [isLoading]); // eslint-disable-line
+  }, [isLoading]);  
 
   const hasMore = loadedRef.current < totalCount;
 
