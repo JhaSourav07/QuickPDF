@@ -198,7 +198,7 @@ export function ToolsGrid() {
     <div className="w-full flex flex-col gap-8">
       {/* Tools Grid */}
       <div className="grid md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
-        {currentTools.map((tool, idx) => {
+        {currentTools.map((tool) => {
           const IconComponent = tool.icon;
           return (
             <Motion.div
