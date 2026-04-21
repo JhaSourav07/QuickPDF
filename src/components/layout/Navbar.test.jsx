@@ -1,9 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Navbar } from "./Navbar";
-import { vi } from "vitest"; // ✅ add this
+import { vi } from "vitest"; 
 
-// mocks
 vi.mock("wagmi", () => ({
   useAccount: () => ({
     address: "0x1234567890abcdef",
