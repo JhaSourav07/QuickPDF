@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
@@ -9,7 +10,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 
 export function Watermark() {
-  const [file, setFile] = useState(null);
+  const [file, setFile, clearFile_store] = useFileStore("Watermark_file", null);
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
@@ -26,10 +27,19 @@ export function Watermark() {
   // Clear file on component unmount to prevent persistence across sessions
   useEffect(() => {
     return () => {
+      clearFile_store();
       if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, []);
+
+  // Recreate original preview URL when file is loaded from storage but preview is missing
+  useEffect(() => {
+    if (file && !originalPreviewUrl && !previewUrl) {
+      const originalUrl = URL.createObjectURL(file);
+      setOriginalPreviewUrl(originalUrl);
+    }
+  }, [file, originalPreviewUrl, previewUrl]);
 
   const fileTooLarge =
     !isPremium &&
@@ -37,7 +47,6 @@ export function Watermark() {
     file.size > mbToBytes(FREE_LIMITS.watermark.maxFileSizeMb);
 
   const isLocked = hasReachedGlobalLimit || fileTooLarge;
-  // const isLocked = false;
   const lockReason = hasReachedGlobalLimit ? "global" : "size";
   const lockLabel = fileTooLarge
     ? `${FREE_LIMITS.watermark.maxFileSizeMb} MB`
