@@ -127,7 +127,7 @@ export function PageNumbers() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{file.name}</p>
-                <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
+                <p className="text-xs text-zinc-500">{formatFileSize(file.size)} • PDF</p>
               </div>
               <button
                 onClick={() => { setFile(null); setDone(false); setError(null); }}

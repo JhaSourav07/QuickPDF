@@ -120,7 +120,7 @@ export function Watermark() {
                 </span>
 
                 <span className="text-sm text-zinc-500 mt-0.5">
-                  {formatFileSize(file.size)}
+                  {formatFileSize(file.size)} • PDF
                   {fileTooLarge && (
                     <span className="text-amber-400 ml-2">
                       (exceeds free limit)
