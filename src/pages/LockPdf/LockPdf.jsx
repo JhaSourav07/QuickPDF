@@ -14,6 +14,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 import { getPdfPageCount } from "../../services/pdf.service";
 
+
 /* password strength helpers */
 function calcStrength(pw) {
   if (!pw) return 0;

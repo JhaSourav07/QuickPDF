@@ -105,8 +105,8 @@ export function Split() {
               <div className="flex flex-col overflow-hidden mr-4">
                 <span className="font-medium text-zinc-200 truncate">{file.name}</span>
                 <span className="text-sm text-zinc-500 mt-0.5">
-                  {totalPages} pages total · {formatFileSize(file.size)}
-                  {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
+                {formatFileSize(file.size)} • {totalPages} pages
+                {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
                 </span>
               </div>
               <button onClick={clearFile} className="p-2 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors">

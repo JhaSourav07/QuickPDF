@@ -9,6 +9,7 @@ import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
 
 export function Compress() {
   const [file, setFile] = useFileStore("Compress_file", null);
@@ -16,6 +17,8 @@ export function Compress() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  
 
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
 
@@ -30,14 +33,29 @@ export function Compress() {
     { id: "extreme",     label: "Extreme",      desc: "30% Quality", icon: <Flame      className="w-5 h-5" />, val: 0.3 },
   ];
 
-  const handleFileSelected = (selectedFiles) => {
-    const selectedFile = selectedFiles[0];
-    if (!selectedFile) return;
-    if (selectedFile.type !== "application/pdf") { setError("Please upload a valid PDF file."); return; }
-    setError(null); setFile(selectedFile); setResult(null);
-  };
+  const handleFileSelected = async (selectedFiles) => {
+  const selectedFile = selectedFiles[0];
+  if (!selectedFile) return;
 
-  const clearFile = () => { setFile(null); setResult(null); setError(null); };
+  if (selectedFile.type !== "application/pdf") {
+    setError("Please upload a valid PDF file.");
+    return;
+  }
+
+  try {
+    setError(null);
+    setFile(selectedFile);
+    setResult(null);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+  } catch {
+    setError("Could not read PDF");
+  }
+};
+
+  
 
   const handleCompress = async () => {
     setIsProcessing(true); setError(null);
@@ -61,6 +79,12 @@ export function Compress() {
     a.href = url; a.download = `QuickPDF_Compressed_${file.name}`; a.click();
     URL.revokeObjectURL(url);
   };
+  const clearFile = () => {
+  setFile(null);
+  setResult(null);
+  setError(null);
+  setPageCount(0); 
+};
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
@@ -92,7 +116,7 @@ export function Compress() {
               <div className="flex flex-col overflow-hidden mr-4">
                 <span className="font-medium text-zinc-200 truncate">{file.name}</span>
                 <span className="text-sm text-zinc-500 mt-0.5">
-                  Original size: {formatFileSize(file.size)}
+                  {formatFileSize(file.size)} • {pageCount} pages
                   {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
                 </span>
               </div>

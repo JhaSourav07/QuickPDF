@@ -9,6 +9,7 @@ import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
 
 export function Grayscale() {
   const [file, setFile] = useFileStore("Grayscale_file", null);
@@ -16,6 +17,7 @@ export function Grayscale() {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
 
@@ -24,13 +26,31 @@ export function Grayscale() {
   const lockReason   = hasReachedGlobalLimit ? "global" : "size";
   const lockLabel    = fileTooLarge ? `${FREE_LIMITS.grayscale.maxFileSizeMb} MB` : undefined;
 
-  const handleFileSelected = (selectedFiles) => {
-    const selectedFile = selectedFiles[0];
-    if (!selectedFile || selectedFile.type !== "application/pdf") { setError("Please upload a valid PDF file."); return; }
-    setError(null); setFile(selectedFile); setResult(null); setProgress({ current: 0, total: 0 });
-  };
+  const handleFileSelected = async (files) => {
+  const selectedFile = files[0];
+  if (!selectedFile) return;
 
-  const clearFile = () => { setFile(null); setResult(null); setError(null); setProgress({ current: 0, total: 0 }); };
+  if (selectedFile.type !== "application/pdf") {
+    setError("Please upload a valid PDF file.");
+    return;
+  }
+
+  try {
+    setError(null);
+    setFile(selectedFile);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+  } catch {
+    setError("Could not read PDF file.");
+  }
+};
+  const clearFile = () => {
+  setFile(null);
+  setError(null);
+  setPageCount(0);
+};
 
   const handleConvert = async () => {
     setIsProcessing(true); setError(null);
@@ -76,8 +96,7 @@ export function Grayscale() {
                 <div className="flex flex-col overflow-hidden">
                   <span className="font-medium text-zinc-200 truncate">{file.name}</span>
                   <span className="text-sm text-zinc-500 mt-0.5">
-                    {formatFileSize(file.size)}
-                    {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
+                  {formatFileSize(file.size)} • {pageCount} pages                    {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
                   </span>
                 </div>
               </div>
