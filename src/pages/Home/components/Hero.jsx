@@ -37,8 +37,8 @@ export function Hero() {
           variants={item}
           className="text-6xl md:text-8xl font-extrabold text-white tracking-tighter leading-[1.1]"
         >
-          PDF tools that <br className="hidden md:block" />
-          respect your <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-zinc-600">privacy.</span>
+          smart PDF tools that <br className="hidden md:block" />
+          help everyone <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-zinc-600">easily.</span>
         </Motion.h1>
 
         <Motion.p 
