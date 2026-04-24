@@ -62,31 +62,66 @@ export const getPdfPageCount = async (file) => {
   return pdf.getPageCount();
 };
 
-export const addWatermark = async (file, watermarkText = "CONFIDENTIAL") => {
+export const addWatermark = async (file, watermarkText = "CONFIDENTIAL", options = {}) => {
   if (!file) throw new Error("Please provide a PDF file.");
+
+  const {
+    position = "center",
+    opacity = 0.3,
+    fontSize = 60,
+    rotation = 45,
+    offsetX = 0,
+    offsetY = 0,
+  } = options;
 
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
-
-  // Stick with a built-in font so we don't need extra assets.
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const pages = pdfDoc.getPages();
 
   pages.forEach((page) => {
     const { width, height } = page.getSize();
-    const fontSize = 60;
-
     const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, fontSize);
     const textHeight = helveticaFont.heightAtSize(fontSize);
+    
+    // Convert degrees to radians for math
+    const rad = (rotation * Math.PI) / 180;
+
+    let x, y;
+    const margin = 40;
+
+    switch (position) {
+      case "top-left":
+        x = margin;
+        y = height - margin - textHeight;
+        break;
+      case "top-right":
+        x = width - margin - textWidth;
+        y = height - margin - textHeight;
+        break;
+      case "bottom-left":
+        x = margin;
+        y = margin;
+        break;
+      case "bottom-right":
+        x = width - margin - textWidth;
+        y = margin;
+        break;
+      case "center":
+      default:
+        x = (width / 2) - (Math.cos(rad) * textWidth / 2) + (Math.sin(rad) * textHeight / 2);
+        y = (height / 2) - (Math.sin(rad) * textWidth / 2) - (Math.cos(rad) * textHeight / 2);
+        break;
+    }
 
     page.drawText(watermarkText, {
-      x: width / 2 - textWidth / 2,
-      y: height / 2 - textHeight / 2,
+      x: x + Number(offsetX),
+      y: y + Number(offsetY),
       size: fontSize,
       font: helveticaFont,
       color: rgb(0.5, 0.5, 0.5),
-      opacity: 0.3,
-      rotate: degrees(45),
+      opacity: parseFloat(opacity),
+      rotate: degrees(rotation),
     });
   });
 

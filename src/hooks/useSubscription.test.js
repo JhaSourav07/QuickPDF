@@ -23,8 +23,31 @@ vi.mock('../lib/firebase', () => ({
 }));
 
 describe('useSubscription', () => {
+  let storage = {};
+
   beforeEach(() => {
     vi.clearAllMocks();
+    storage = {};
+    
+    const mockStorage = {
+      getItem: vi.fn((key) => storage[key] || null),
+      setItem: vi.fn((key, value) => {
+        storage[key] = String(value);
+      }),
+      removeItem: vi.fn((key) => {
+        delete storage[key];
+      }),
+      clear: vi.fn(() => {
+        storage = {};
+      }),
+    };
+
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: mockStorage,
+      writable: true,
+      configurable: true
+    });
+    
     localStorage.clear();
     useAccount.mockReturnValue({ address: undefined, isConnected: false });
   });
