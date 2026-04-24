@@ -9,6 +9,7 @@ import { formatFileSize } from "../../utils/formatters";
 import { addPageNumbers } from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
 
 const POSITIONS = [
   { value: "left",   label: "Left"   },
@@ -27,6 +28,7 @@ export function PageNumbers() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]             = useState(false);
   const [error, setError]           = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } = useSubscription();
   const LIMIT_MB = FREE_LIMITS.pageNumbers.maxFileSizeMb;
@@ -91,7 +93,21 @@ export function PageNumbers() {
       </div>
 
       {!file ? (
-        <Dropzone onFilesSelected={(f) => { setFile(f[0]); setDone(false); }} multiple={false} text="Drop a PDF to number its pages" />
+        <Dropzone
+  onFilesSelected={async (f) => {
+    const selectedFile = f[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+    setDone(false);
+  }}
+  multiple={false}
+  text="Drop a PDF to number its pages"
+/>
       ) : (
         <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
@@ -127,7 +143,7 @@ export function PageNumbers() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{file.name}</p>
-                <p className="text-xs text-zinc-500">{formatFileSize(file.size)} • PDF</p>
+                <p className="text-xs text-zinc-500">{formatFileSize(file.size)} • {pageCount} pages</p>
               </div>
               <button
                 onClick={() => { setFile(null); setDone(false); setError(null); }}

@@ -12,6 +12,7 @@ import { formatFileSize } from "../../utils/formatters";
 import { lockPdf }       from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
 
 /* password strength helpers */
 function calcStrength(pw) {
@@ -36,6 +37,7 @@ export function LockPdf() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]             = useState(false);
   const [error, setError]           = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } =
     useSubscription();
@@ -122,10 +124,20 @@ export function LockPdf() {
       {/* ── Drop zone ── */}
       {!file ? (
         <Dropzone
-          onFilesSelected={(f) => { setFile(f[0]); setDone(false); }}
-          multiple={false}
-          text="Drop a PDF to lock it"
-        />
+  onFilesSelected={async (f) => {
+    const selectedFile = f[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+    setDone(false);
+  }}
+  multiple={false}
+  text="Drop a PDF to lock it"
+/>
       ) : (
         <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
@@ -163,7 +175,7 @@ export function LockPdf() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{file.name}</p>
-                <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
+                <p className="text-xs text-zinc-500">{formatFileSize(file.size)} • {pageCount} pages</p>
               </div>
               <button
                 onClick={reset}
