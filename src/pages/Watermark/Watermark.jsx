@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
@@ -16,6 +16,7 @@ export function Watermark() {
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [originalPreviewUrl, setOriginalPreviewUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [pageCount, setPageCount] = useState(0);
 
@@ -25,6 +26,31 @@ export function Watermark() {
     incrementUsage,
     isWalletConnected,
   } = useSubscription();
+
+  useEffect(() => {
+    return () => {
+      if (originalPreviewUrl) {
+        URL.revokeObjectURL(originalPreviewUrl);
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [originalPreviewUrl, previewUrl]);
+
+  // Recreate original preview URL when file is loaded from storage but preview is missing
+  useEffect(() => {
+    if (!file || previewUrl || originalPreviewUrl) return;
+
+    const originalUrl = file.url || URL.createObjectURL(file);
+    queueMicrotask(() => setOriginalPreviewUrl(originalUrl));
+
+    return () => {
+      if (!file.url) {
+        URL.revokeObjectURL(originalUrl);
+      }
+    };
+  }, [file, previewUrl, originalPreviewUrl]);
 
   const fileTooLarge =
     !isPremium &&
@@ -82,7 +108,7 @@ export function Watermark() {
 }
 
   return (
-    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
+    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl || (file && originalPreviewUrl) ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Stamp className="w-8 h-8" />
@@ -103,7 +129,7 @@ export function Watermark() {
         </p>
       </div>
 
-      <div className={previewUrl ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
+      <div className={previewUrl || (file && originalPreviewUrl) ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
         <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
           {error && (
           <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
@@ -181,7 +207,7 @@ export function Watermark() {
                   ) : (
                     <>
                       <Download className="w-5 h-5 mr-2" />
-                      Generate Preview
+                      Apply Watermark
                     </>
                   )}
                 </Button>
@@ -192,10 +218,25 @@ export function Watermark() {
         )}
         </div>
 
+        {originalPreviewUrl && !previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Original PDF
+            </h2>
+
+            <iframe
+              src={originalPreviewUrl}
+              title="Original PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+          </div>
+        )}
+
         {previewUrl && (
           <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
             <h2 className="text-lg font-semibold text-white mb-6">
-              Preview
+              Preview with Watermark
             </h2>
 
             <iframe

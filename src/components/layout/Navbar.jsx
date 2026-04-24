@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FileText, Menu, X, LogOut, Crown, Copy, Check, Star, ChevronDown } from "lucide-react";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { useAccount, useDisconnect } from "wagmi";
@@ -107,7 +107,28 @@ function WalletMenu({ address, isPremium }) {
 // Edit Dropdown Component
 function EditDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [locked, setLocked] = useState(false);
+  const location = useLocation();
+  const shouldReset = location.pathname;
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
 
   const tools = [
     { name: "Merge", path: "/merge" },
@@ -119,11 +140,18 @@ function EditDropdown() {
   return (
     <div
       className="relative"
-      ref={dropdownRef}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => !locked && setIsOpen(true)}
+      onMouseLeave={() => {
+        if (!locked) setIsOpen(false);
+      }}
     >
-      <button className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group">
+      <button
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
+        className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Edit
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -134,15 +162,19 @@ function EditDropdown() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a] backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
           >
             <div className="py-2">
               {tools.map((tool) => (
                 <Link
                   key={tool.name}
                   to={tool.path}
-                  className="block px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
+                  className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
                 </Link>
@@ -158,8 +190,28 @@ function EditDropdown() {
 // Convert Dropdown Component
 function ConvertDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [locked, setLocked] = useState(false);
+  const location = useLocation();
+  const shouldReset = location.pathname;
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
   const tools = [
     { name: "Image To PDF", path: "/image-to-pdf" },
     { name: "PDF To Image", path: "/pdf-to-image" },
@@ -168,11 +220,18 @@ function ConvertDropdown() {
   return (
     <div
       className="relative"
-      ref={dropdownRef}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => !locked && setIsOpen(true)}
+      onMouseLeave={() => {
+        if (!locked) setIsOpen(false);
+      }}
     >
-      <button className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group">
+      <button
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
+        className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Convert
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -183,15 +242,19 @@ function ConvertDropdown() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a] backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
           >
             <div className="py-2">
               {tools.map((tool) => (
                 <Link
                   key={tool.name}
                   to={tool.path}
-                  className="block px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
+                  className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
                 </Link>
@@ -207,7 +270,28 @@ function ConvertDropdown() {
 // Optimize Dropdown Component
 function OptimizeDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [locked, setLocked] = useState(false);
+  const location = useLocation();
+  const shouldReset = location.pathname;
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
 
   const tools = [
     { name: "Compress", path: "/compress" },
@@ -217,11 +301,18 @@ function OptimizeDropdown() {
   return (
     <div
       className="relative"
-      ref={dropdownRef}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => !locked && setIsOpen(true)}
+      onMouseLeave={() => {
+        if (!locked) setIsOpen(false);
+      }}
     >
-      <button className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group">
+      <button
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
+        className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Optimize
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -232,15 +323,19 @@ function OptimizeDropdown() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a] backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
           >
             <div className="py-2">
               {tools.map((tool) => (
                 <Link
                   key={tool.name}
                   to={tool.path}
-                  className="block px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
+                  className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                 >
                   {tool.name}
                 </Link>
@@ -256,8 +351,28 @@ function OptimizeDropdown() {
 // Security Dropdown Component
 function SecurityDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [locked, setLocked] = useState(false);
+  const location = useLocation();
+  const shouldReset = location.pathname;
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      setIsOpen(false);
+      setLocked(false);
+    });
+  }, [shouldReset]);
+  useEffect(() => {
+    function handleCloseAll() {
+      setIsOpen(false);
+      setLocked(false);
+    }
+
+    window.addEventListener("closeAllDropdowns", handleCloseAll);
+
+    return () => {
+      window.removeEventListener("closeAllDropdowns", handleCloseAll);
+    };
+  }, []);
   const tools = [
     { name: "Watermark", path: "/watermark" },
   ];
@@ -265,11 +380,18 @@ function SecurityDropdown() {
   return (
     <div
       className="relative"
-      ref={dropdownRef}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => !locked && setIsOpen(true)}
+      onMouseLeave={() => {
+        if (!locked) setIsOpen(false);
+      }}
     >
-      <button className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group">
+      <button
+        onClick={() => {
+          window.dispatchEvent(new Event("closeAllDropdowns"));
+          setIsOpen((prev) => !prev);
+          setLocked((prev) => !prev);
+        }}
+        className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white transition-colors whitespace-nowrap group cursor-pointer">
         Security
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -280,15 +402,20 @@ function SecurityDropdown() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a] backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="absolute left-0 mt-2 w-44 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
           >
             <div className="py-2">
               {tools.map((tool) => (
                 <Link
                   key={tool.name}
                   to={tool.path}
-                  className="block px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocked(false);
+                  }}
+                  className={`block px-4 py-2 text-sm transition-all ${location.pathname === tool.path ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5"
+                    }`}
                 >
                   {tool.name}
                 </Link>
@@ -382,7 +509,7 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="lg:hidden border-b border-white/10 bg-[#0a0a0a] overflow-hidden"
+            className="lg:hidden border-b border-white/10 bg-[#0a0a0a] overflow-hidden max-h-[80vh] overflow-y-auto"
           >
             <div className="px-4 pt-2 pb-4 space-y-1">
               {navLinks.map((link) => (
