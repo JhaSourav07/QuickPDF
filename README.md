@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # QuickPDF
@@ -16,7 +15,7 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b4fa8a5d-0510-4b09-a5a6-b043ffcf4691/deploy-status)](https://app.netlify.com/projects/quickstpdf/deploys)
 [![CI Pipeline](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml/badge.svg)](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml)
 
-**[🚀 Try the Live Demo Here](https://quickpdff.vercel.app/)**
+**[🚀 Try the Live Demo Here](https://quickpdf.vercel.app/)**
 
 ---
 
@@ -56,118 +55,4 @@ Every major PDF tool — Smallpdf, ILovePDF, Adobe Acrobat Online — routes you
 <img width="1906" height="944" alt="Screenshot 2026-03-26 023302" src="https://github.com/user-attachments/assets/bfb35bf5-e7cb-49ef-8c78-1d8cb55cd762" />
 <img width="1905" height="941" alt="Screenshot 2026-03-26 023335" src="https://github.com/user-attachments/assets/c876a538-22f3-4821-b28c-ce9bd832c55b" />
 <img width="1902" height="944" alt="Screenshot 2026-03-26 023512" src="https://github.com/user-attachments/assets/c9269365-fe15-4080-9433-dfe1cadbb676" />
-<img width="1891" height="923" alt="Screenshot 2026-03-26 023607" src="https://github.com/user-attachments/assets/6ea8d217-9c91-447a-80c2-8a9b328835ef" />
-
----
-
-## Getting Started
-
-**Prerequisites:** Node.js v22+ (LTS)
-
-```bash
-# Clone the repo
-git clone https://github.com/jhasourav07/quickpdf.git
-cd quickpdf
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-```
-
-Open `http://localhost:5173` in your browser.
-
-```bash
-# Production build
-npm run build
-
-# Preview production build locally
-npm run preview
-```
-
-The `dist/` output is fully static — deploy to Vercel, Netlify, or Cloudflare Pages with zero configuration.
-
----
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── layout/
-│   │   ├── Navbar.jsx              # Sticky top navigation
-│   │   └── PageContainer.jsx       # Page layout wrapper
-│   ├── pdf/
-│   │   └── Dropzone.jsx            # Drag-and-drop file input
-│   └── ui/
-│       ├── AnimatedBackground.jsx  # Mouse-reactive background
-│       └── Button.jsx              # Reusable button component
-├── pages/
-│   ├── Home/                       # Landing page
-│   ├── Merge/                      # Multi-file merge tool
-│   └── Split/                      # Page-range split tool
-├── services/
-│   └── pdf.service.js              # Core PDF logic (merge, split, page count)
-└── utils/
-    └── formatters.js               # File size helpers
-```
-
----
-
-## How It Works
-
-QuickPDF uses [`pdf-lib`](https://pdf-lib.js.org/) — a pure JavaScript library that runs entirely in the browser with no server dependency.
-
-**Merging**
-
-1. Files are read as `ArrayBuffer` via the browser's native File API
-2. Each PDF is loaded into a `PDFDocument` instance in memory
-3. Pages are copied into a new document in the user-defined drag order
-4. The merged document is serialized and triggered as a browser download — never transmitted anywhere
-
-**Splitting**
-
-1. User uploads a PDF; page count is extracted immediately in-memory
-2. User specifies start and end pages
-3. Only the selected page range is copied into a new `PDFDocument`
-4. Output is downloaded directly — the original file is never modified
-
----
-
-## Roadmap
-
-- [ ] Sign PDF — Local, private e-signature drawing tool
-- [ ] Add Page Numbers — Auto-stamp sequential numbers on footers
-- [ ] Extract Text (OCR) — Pull readable text directly to clipboard
-- [ ] Protect/Unlock PDF — Add or remove passwords locally
-- [ ] Edit Pdf - Edit pdf locally on your browser
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a branch: `git checkout -b feat/your-feature`
-3. Commit your changes: `git commit -m 'feat: add your feature'`
-4. Push: `git push origin feat/your-feature`
-5. Open a Pull Request
-
-Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit message format.
-
----
-
-## Security
-
-QuickPDF is architected so that a breach of the application itself **cannot expose user files** — because files are never transmitted. The attack surface is limited entirely to the user's own browser session.
-
-If you discover a vulnerability, please open a [GitHub Security Advisory](https://github.com/jhasourav07/quickpdf/security/advisories/new) rather than a public issue.
-
----
-
-## License
-
-MIT © [Sourav Jha](https://github.com/jhasourav07)
-
-
-### This project is an official participant in Nexus Spring of Code (NSoC) 2026.
+<img width="1891" height="923" alt="Screenshot 2026-03-26 023607" src="https://github.com/user-att
