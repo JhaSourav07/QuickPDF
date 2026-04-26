@@ -29,22 +29,22 @@ export function useCheckout() {
 
   const liveTxHash = nativeTxHash ?? erc20TxHash;
 
-  const { isLoading: isConfirming, isSuccess: isTxConfirmed, error: receiptError } = useWaitForTransactionReceipt({
+  const {  isSuccess: isTxConfirmed, error: receiptError } = useWaitForTransactionReceipt({
     hash:  liveTxHash,
     query: { enabled: !!liveTxHash },
   });
 
   useEffect(() => {
-    if (nativeIsSigning || erc20IsSigning) setStage(CHECKOUT_STAGE.SIGNING);
+    if (nativeIsSigning || erc20IsSigning) queueMicrotask(() => setStage(CHECKOUT_STAGE.SIGNING));
   }, [nativeIsSigning, erc20IsSigning]);
 
   useEffect(() => {
-    if (liveTxHash) { setTxHash(liveTxHash); setStage(CHECKOUT_STAGE.CONFIRMING); }
+    if (liveTxHash) queueMicrotask(() => { setTxHash(liveTxHash); setStage(CHECKOUT_STAGE.CONFIRMING); });
   }, [liveTxHash]);
 
   useEffect(() => {
     if (!isTxConfirmed || !address) return;
-    setStage(CHECKOUT_STAGE.WRITING_DB);
+    queueMicrotask(() => setStage(CHECKOUT_STAGE.WRITING_DB));
     updateDoc(doc(db, USERS, address.toLowerCase()), {
       isPremium:  true,
       upgradedAt: serverTimestamp(),
@@ -58,10 +58,12 @@ export function useCheckout() {
   useEffect(() => {
     const err = nativeSendError ?? erc20WriteError ?? receiptError;
     if (!err) return;
-    // Wallet rejection is not an error we want to surface — just go back to idle
-    if (err.name === "UserRejectedRequestError") { setStage(CHECKOUT_STAGE.IDLE); return; }
-    setError(err);
-    setStage(CHECKOUT_STAGE.ERROR);
+    queueMicrotask(() => {
+      // Wallet rejection is not an error we want to surface — just go back to idle
+      if (err.name === "UserRejectedRequestError") { setStage(CHECKOUT_STAGE.IDLE); return; }
+      setError(err);
+      setStage(CHECKOUT_STAGE.ERROR);
+    });
   }, [nativeSendError, erc20WriteError, receiptError]);
 
   const executePayment = useCallback((tokenType, amountWei) => {

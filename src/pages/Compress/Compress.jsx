@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Minimize2, X, Download, Loader2, Zap, ShieldCheck, Gauge, Flame } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { compressWithQuality } from "../../services/pdf.service";
@@ -8,13 +9,16 @@ import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
 
 export function Compress() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Compress_file", null);
   const [level, setLevel] = useState("recommended");
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  
 
   const { isPremium, hasReachedGlobalLimit, incrementUsage, isWalletConnected } = useSubscription();
 
@@ -29,14 +33,29 @@ export function Compress() {
     { id: "extreme",     label: "Extreme",      desc: "30% Quality", icon: <Flame      className="w-5 h-5" />, val: 0.3 },
   ];
 
-  const handleFileSelected = (selectedFiles) => {
-    const selectedFile = selectedFiles[0];
-    if (!selectedFile) return;
-    if (selectedFile.type !== "application/pdf") { setError("Please upload a valid PDF file."); return; }
-    setError(null); setFile(selectedFile); setResult(null);
-  };
+  const handleFileSelected = async (selectedFiles) => {
+  const selectedFile = selectedFiles[0];
+  if (!selectedFile) return;
 
-  const clearFile = () => { setFile(null); setResult(null); setError(null); };
+  if (selectedFile.type !== "application/pdf") {
+    setError("Please upload a valid PDF file.");
+    return;
+  }
+
+  try {
+    setError(null);
+    setFile(selectedFile);
+    setResult(null);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+  } catch {
+    setError("Could not read PDF");
+  }
+};
+
+  
 
   const handleCompress = async () => {
     setIsProcessing(true); setError(null);
@@ -46,7 +65,7 @@ export function Compress() {
       const savings = Math.round(((file.size - blob.size) / file.size) * 100);
       setResult({ blob, size: blob.size, savings: savings > 0 ? savings : 0 });
       await incrementUsage();
-    } catch (err) {
+    } catch {
       setError("Compression failed. The file might be encrypted or too large.");
     } finally {
       setIsProcessing(false);
@@ -60,6 +79,12 @@ export function Compress() {
     a.href = url; a.download = `QuickPDF_Compressed_${file.name}`; a.click();
     URL.revokeObjectURL(url);
   };
+  const clearFile = () => {
+  setFile(null);
+  setResult(null);
+  setError(null);
+  setPageCount(0); 
+};
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
@@ -91,7 +116,7 @@ export function Compress() {
               <div className="flex flex-col overflow-hidden mr-4">
                 <span className="font-medium text-zinc-200 truncate">{file.name}</span>
                 <span className="text-sm text-zinc-500 mt-0.5">
-                  Original size: {formatFileSize(file.size)}
+                  {formatFileSize(file.size)} • {pageCount} pages
                   {fileTooLarge && <span className="text-amber-400 ml-2">(exceeds free limit)</span>}
                 </span>
               </div>
@@ -117,7 +142,7 @@ export function Compress() {
 
             <AnimatePresence>
               {result && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                   className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between"
                 >
                   <div className="flex flex-col">
@@ -125,7 +150,7 @@ export function Compress() {
                     <span className="text-emerald-500/80 text-xs mt-0.5">Saved {result.savings}% · New size: {formatFileSize(result.size)}</span>
                   </div>
                   <div className="text-emerald-400 font-bold text-xl">-{result.savings}%</div>
-                </motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
 

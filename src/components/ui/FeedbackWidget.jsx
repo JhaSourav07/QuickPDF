@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { MessageSquarePlus, X, Bug, Lightbulb, Star, Send, CheckCircle2, Loader2, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 const TYPES = [
-  { value: "bug",         label: "Bug Report",       Icon: Bug,       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20"    },
-  { value: "improvement", label: "Improvement Idea",  Icon: Lightbulb, color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/20" },
-  { value: "general",     label: "General Feedback",  Icon: Star,      color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20"  },
+  { value: "bug",         label: "Bug Report",       color: "text-red-400",    bg: "bg-red-500/10 border-red-500/20"    },
+  { value: "improvement", label: "Improvement Idea",  color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/20" },
+  { value: "general",     label: "General Feedback",  color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20"  },
 ];
 
 const TOOLS = [
@@ -54,7 +54,6 @@ export function FeedbackWidget() {
     setSending(false);
   }
 
-  const selectedType = TYPES.find(t => t.value === type);
 
   return (
     <>
@@ -71,12 +70,12 @@ export function FeedbackWidget() {
       {/* Backdrop + Modal */}
       <AnimatePresence>
         {open && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
             onClick={e => { if (e.target === e.currentTarget) { setOpen(false); setTimeout(reset, 300); } }}
           >
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.97 }}
@@ -101,9 +100,9 @@ export function FeedbackWidget() {
               {sent ? (
                 /* ── Success state ── */
                 <div className="flex flex-col items-center justify-center py-14 gap-4">
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
+                  <Motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
                     <CheckCircle2 className="w-14 h-14 text-emerald-400" />
-                  </motion.div>
+                  </Motion.div>
                   <p className="text-white font-semibold text-lg">Thank you!</p>
                   <p className="text-zinc-500 text-sm text-center px-8">Your feedback has been received. We read every submission.</p>
                 </div>
@@ -115,11 +114,11 @@ export function FeedbackWidget() {
                   <div className="space-y-2">
                     <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold">Type</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {TYPES.map(({ value, label, Icon, color, bg }) => (
+                      {TYPES.map(({ value, label, color, bg }) => (
                         <button key={value} type="button" onClick={() => setType(value)}
                           className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border text-xs font-medium transition-all
                             ${type === value ? `${bg} ${color} border-current` : "border-white/[0.06] text-zinc-500 hover:text-white hover:border-white/20"}`}>
-                          <Icon className="w-4 h-4" />
+                          
                           {label}
                         </button>
                       ))}
@@ -195,8 +194,8 @@ export function FeedbackWidget() {
                   </button>
                 </form>
               )}
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </>

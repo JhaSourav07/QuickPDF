@@ -23,8 +23,10 @@ export function useSubscription() {
 
   useEffect(() => {
     if (!isConnected || !address) {
-      setUsageCount(getLocalUsage());
-      setIsPremium(false);
+      queueMicrotask(() => {
+        setUsageCount(getLocalUsage());
+        setIsPremium(false);
+      });
       return;
     }
 

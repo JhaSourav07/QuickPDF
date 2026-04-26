@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
@@ -7,13 +8,17 @@ import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
+
 
 export function Watermark() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useFileStore("Watermark_file", null);
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [originalPreviewUrl, setOriginalPreviewUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const {
     isPremium,
@@ -21,6 +26,31 @@ export function Watermark() {
     incrementUsage,
     isWalletConnected,
   } = useSubscription();
+
+  useEffect(() => {
+    return () => {
+      if (originalPreviewUrl) {
+        URL.revokeObjectURL(originalPreviewUrl);
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [originalPreviewUrl, previewUrl]);
+
+  // Recreate original preview URL when file is loaded from storage but preview is missing
+  useEffect(() => {
+    if (!file || previewUrl || originalPreviewUrl) return;
+
+    const originalUrl = file.url || URL.createObjectURL(file);
+    queueMicrotask(() => setOriginalPreviewUrl(originalUrl));
+
+    return () => {
+      if (!file.url) {
+        URL.revokeObjectURL(originalUrl);
+      }
+    };
+  }, [file, previewUrl, originalPreviewUrl]);
 
   const fileTooLarge =
     !isPremium &&
@@ -33,25 +63,23 @@ export function Watermark() {
     ? `${FREE_LIMITS.watermark.maxFileSizeMb} MB`
     : undefined;
 
-  const handleFileSelected = (selectedFiles) => {
-    const selectedFile = selectedFiles[0];
-    if (!selectedFile) return;
+  const handleFileSelected = async (selectedFiles) => {
+  const selectedFile = selectedFiles[0];
+  if (!selectedFile) return;
 
-    if (selectedFile.type !== "application/pdf") {
-      setError("Please upload a valid PDF file.");
-      return;
-    }
+  if (selectedFile.type !== "application/pdf") {
+    setError("Please upload a valid PDF file.");
+    return;
+  }
 
-    setError(null);
-    setFile(selectedFile);
-    setPreviewUrl(null);
-  };
+  setError(null);
+  setFile(selectedFile);
 
-  const clearFile = () => {
-    setFile(null);
-    setError(null);
-    setPreviewUrl(null);
-  };
+  const count = await getPdfPageCount(selectedFile);
+  console.log("Page count:", count);  
+  setPageCount(count);
+  setPreviewUrl(null);
+};
 
   const handleProcess = async () => {
     if (!file || !watermarkText.trim()) return;
@@ -65,15 +93,22 @@ export function Watermark() {
 
       setPreviewUrl(url);
       await incrementUsage();
-    } catch (err) {
-      setError("An error occurred while adding the watermark.");
+    } catch {
+      setError("Could not read the PDF file. It might be corrupted or encrypted.");
+      setFile(null);
     } finally {
       setIsProcessing(false);
     }
   };
+  function clearFile() {
+  setFile(null);
+  setError(null);
+  setPreviewUrl(null);
+  setPageCount(0);
+}
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
+    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl || (file && originalPreviewUrl) ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Stamp className="w-8 h-8" />
@@ -94,8 +129,9 @@ export function Watermark() {
         </p>
       </div>
 
-      <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
-        {error && (
+      <div className={previewUrl || (file && originalPreviewUrl) ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
+          {error && (
           <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
             {error}
           </div>
@@ -117,7 +153,7 @@ export function Watermark() {
                 </span>
 
                 <span className="text-sm text-zinc-500 mt-0.5">
-                  {formatFileSize(file.size)}
+                  {formatFileSize(file.size)} • {pageCount} pages
                   {fileTooLarge && (
                     <span className="text-amber-400 ml-2">
                       (exceeds free limit)
@@ -171,36 +207,61 @@ export function Watermark() {
                   ) : (
                     <>
                       <Download className="w-5 h-5 mr-2" />
-                      Generate Preview
+                      Apply Watermark
                     </>
                   )}
                 </Button>
               )}
             </div>
 
-            {previewUrl && (
-              <div className="mt-8 space-y-4 border-t border-white/10 pt-6">
-                <h2 className="text-lg font-semibold text-white">
-                  Preview
-                </h2>
+          </div>
+        )}
+        </div>
 
-                <iframe
-                  src={previewUrl}
-                  title="Watermarked PDF Preview"
-                  className="w-full h-[500px] rounded-xl border border-white/10 bg-white"
-                />
+        {originalPreviewUrl && !previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Original PDF
+            </h2>
 
-                <a
-                  href={previewUrl}
-                  download={`QuickPDF_Watermarked_${Date.now()}.pdf`}
-                >
-                  <Button className="w-full sm:w-auto">
-                    <Download className="w-5 h-5 mr-2" />
-                    Download PDF
-                  </Button>
-                </a>
-              </div>
-            )}
+            <iframe
+              src={originalPreviewUrl}
+              title="Original PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+          </div>
+        )}
+
+        {previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Preview with Watermark
+            </h2>
+
+            <iframe
+              src={previewUrl}
+              title="Watermarked PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white mb-6"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = previewUrl;
+                  link.download = `QuickPDF_Watermarked_${Date.now()}.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download PDF
+              </Button>
+            </div>
           </div>
         )}
       </div>

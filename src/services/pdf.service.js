@@ -129,7 +129,7 @@ export const imageToPdf = async (files) => {
   return new Blob([pdfBytes], { type: "application/pdf" });
 };
 
-export const compressWithQuality = async (file, quality = 0.5) => {
+export const compressWithQuality = async (file) => {
   const arrayBuffer = await file.arrayBuffer();
 
   // Some PDFs are technically readable but still carry permission flags.

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Layers, X, Download, Loader2, Trash2, GripVertical,
   Plus, Eye, EyeOff, CheckCircle2, FileText,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { mergePdfs }     from "../../services/pdf.service";
@@ -45,7 +46,7 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
   const [over, setOver] = useState(false);
 
   return (
-    <motion.div
+    <Motion.div
       layout
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -111,9 +112,9 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
       </div>
 
       {/* Name + size */}
-      <div className="w-full px-1">
+      <div className="w-full px-1"> 
         <p className="text-[11px] text-zinc-300 font-medium truncate">{item.name}</p>
-        <p className="text-[10px] text-zinc-600">{formatFileSize(item.size)}</p>
+        <p className="text-[10px] text-zinc-500">{formatFileSize(item.size)}{item.numPages != null && ` · ${item.numPages} pages`}</p>
       </div>
 
       {/* Remove */}
@@ -124,7 +125,7 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
       >
         <X className="w-3 h-3" />
       </button>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -137,7 +138,7 @@ function PreviewModal({ item, onClose }) {
     if (!item) return;
     const url = URL.createObjectURL(item.file);
     objectUrl.current = url;
-    setSrc(url);
+    queueMicrotask(() => setSrc(url));
     return () => { URL.revokeObjectURL(url); };
   }, [item]);
 
@@ -145,7 +146,7 @@ function PreviewModal({ item, onClose }) {
 
   return (
     <AnimatePresence>
-      <motion.div
+      <Motion.div
         key="preview-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -153,7 +154,7 @@ function PreviewModal({ item, onClose }) {
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
         onClick={onClose}
       >
-        <motion.div
+        <Motion.div
           key="preview-panel"
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -193,15 +194,15 @@ function PreviewModal({ item, onClose }) {
               </div>
             )}
           </div>
-        </motion.div>
-      </motion.div>
+        </Motion.div>
+      </Motion.div>
     </AnimatePresence>
   );
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export function Merge() {
-  const [items, setItems]               = useState([]);   // { id, file, name, size, thumb, numPages, loadingThumb, order }
+  const [items, setItems] = useFileStore("Merge_items", []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]                 = useState(false);
   const [error, setError]               = useState(null);
@@ -250,7 +251,7 @@ export function Merge() {
         )
       );
     }
-  }, []);
+  }, [setItems]);
 
   // ── remove / clear ──
   function removeItem(id) {
@@ -313,14 +314,14 @@ export function Merge() {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <Layers className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Merge PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Combine multiple PDFs into a single file. Drag thumbnails to set the order.
@@ -335,7 +336,7 @@ export function Merge() {
       {/* Error */}
       <AnimatePresence>
         {error && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -344,7 +345,7 @@ export function Merge() {
             <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm">
               {error}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
 
@@ -356,7 +357,7 @@ export function Merge() {
           hintText="PDF only"
         />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
 
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-zinc-900/50 border border-white/[0.06] rounded-2xl">
@@ -416,7 +417,7 @@ export function Merge() {
           >
             <Plus className="w-4 h-4" /> Drop more PDFs or click to add
           </div>
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* Sticky bottom bar */}

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import {
   Lock, Eye, EyeOff, X, Download, Loader2,
   CheckCircle2, ShieldCheck, AlertTriangle,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
@@ -11,6 +12,8 @@ import { formatFileSize } from "../../utils/formatters";
 import { lockPdf }       from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
+import { getPdfPageCount } from "../../services/pdf.service";
+
 
 /* password strength helpers */
 function calcStrength(pw) {
@@ -27,7 +30,7 @@ const STRENGTH_LABELS = ["", "Weak", "Weak", "Fair", "Strong", "Very strong"];
 const STRENGTH_COLORS = ["", "#ef4444", "#f97316", "#eab308", "#22c55e", "#22c55e"];
 
 export function LockPdf() {
-  const [file, setFile]             = useState(null);
+  const [file, setFile] = useFileStore("LockPdf_file", null);
   const [password, setPassword]     = useState("");
   const [confirm, setConfirm]       = useState("");
   const [showPw, setShowPw]         = useState(false);
@@ -35,6 +38,7 @@ export function LockPdf() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]             = useState(false);
   const [error, setError]           = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } =
     useSubscription();
@@ -88,14 +92,14 @@ export function LockPdf() {
 
       {/* ── Header ── */}
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <Lock className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
 
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">
           Lock PDF
@@ -104,16 +108,16 @@ export function LockPdf() {
           Password-protect your document entirely in the browser — nothing is uploaded to any server.
         </p>
 
-        {/* global limit banner */}
+        {/* global-limit banner */}
         <AnimatePresence>
           {hasReachedGlobalLimit && !isPremium && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               className="mt-6 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300 text-sm"
             >
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
               <span><span className="font-semibold text-white">Free limit reached.</span> Connect your wallet to keep going.</span>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -121,17 +125,27 @@ export function LockPdf() {
       {/* ── Drop zone ── */}
       {!file ? (
         <Dropzone
-          onFilesSelected={(f) => { setFile(f[0]); setDone(false); }}
-          multiple={false}
-          text="Drop a PDF to lock it"
-        />
+  onFilesSelected={async (f) => {
+    const selectedFile = f[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+
+    const count = await getPdfPageCount(selectedFile);
+    setPageCount(count);
+
+    setDone(false);
+  }}
+  multiple={false}
+  text="Drop a PDF to lock it"
+/>
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
           {/* size warning */}
           <AnimatePresence>
             {isOverSize && !isPremium && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="mb-6 overflow-hidden"
               >
@@ -142,7 +156,7 @@ export function LockPdf() {
                     <span className="text-zinc-400">{formatFileSize(file.size)} uploaded. Upgrade for unlimited sizes.</span>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
 
@@ -162,7 +176,7 @@ export function LockPdf() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{file.name}</p>
-                <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
+                <p className="text-xs text-zinc-500">{formatFileSize(file.size)} • {pageCount} pages</p>
               </div>
               <button
                 onClick={reset}
@@ -245,12 +259,12 @@ export function LockPdf() {
               </div>
               <AnimatePresence>
                 {mismatch && (
-                  <motion.p
+                  <Motion.p
                     initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                     className="text-xs text-red-400"
                   >
                     Passwords don't match
-                  </motion.p>
+                  </Motion.p>
                 )}
               </AnimatePresence>
             </div>
@@ -295,7 +309,7 @@ export function LockPdf() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </div>
   );

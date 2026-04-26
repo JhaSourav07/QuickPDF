@@ -1,14 +1,14 @@
 import React, { useState, useRef, useCallback } from "react";
+import { useFileStore } from "../../hooks/useFileStore";
 import { Image as ImageIcon, X, Download, Loader2, CheckCircle2, Plus, GripVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
 import { imageToPdf }    from "../../services/pdf.service";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
-import { FREE_LIMITS }   from "../../config/limits";
-
+import { FREE_LIMITS }   from  '../../config/limits';
 let _uid = 0;
 function makeItem(file) {
   const url = URL.createObjectURL(file);
@@ -18,7 +18,7 @@ function makeItem(file) {
 function ThumbCard({ item, onRemove, onDragStart, onDragEnter, onDragEnd }) {
   const [over, setOver] = useState(false);
   return (
-    <motion.div
+    <Motion.div
       layout
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -67,12 +67,12 @@ function ThumbCard({ item, onRemove, onDragStart, onDragEnter, onDragEnd }) {
       >
         <X className="w-3 h-3" />
       </button>
-    </motion.div>
+    </Motion.div>
   );
 }
 
 export function ImageToPdf() {
-  const [items, setItems]               = useState([]);
+  const [items, setItems] = useFileStore("ImageToPdf_items", []);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]                 = useState(false);
   const [error, setError]               = useState(null);
@@ -97,7 +97,7 @@ export function ImageToPdf() {
       setError(null);
     setItems((prev) => [...prev, ...valid.map(makeItem)]);
     setDone(false);
-  }, []);
+  }, [setItems]);
 
   function removeItem(id) {
     setItems((prev) => {
@@ -161,14 +161,14 @@ export function ImageToPdf() {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <motion.div
+        <Motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
           <ImageIcon className="w-10 h-10" />
-        </motion.div>
+        </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Image to PDF</h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
           Convert JPG &amp; PNG images into a PDF. Drag thumbnails to set the page order.
@@ -178,13 +178,13 @@ export function ImageToPdf() {
       {/* Error */}
       <AnimatePresence>
         {error && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+          <Motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="mb-6 overflow-hidden"
           >
             <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm">
               {error}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
 
@@ -197,7 +197,7 @@ export function ImageToPdf() {
           hintText="JPG, PNG only"
         />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
+        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-36">
 
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-zinc-900/50 border border-white/[0.06] rounded-2xl">
@@ -253,7 +253,7 @@ export function ImageToPdf() {
           >
             <Plus className="w-4 h-4" /> Drop more images or click to add
           </div>
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* Sticky bottom bar */}
