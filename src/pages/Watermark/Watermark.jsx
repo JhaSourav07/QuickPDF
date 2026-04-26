@@ -34,12 +34,10 @@ export function Watermark() {
     isWalletConnected,
   } = useSubscription();
 
-  // 1. Fetch Page Count when file changes
+  // 1. Fetch Page Count ONLY when a file exists
   useEffect(() => {
-    if (!file) {
-      setPageCount(0);
-      return;
-    }
+    if (!file) return; // Just exit, don't set state here
+
     const fetchPageCount = async () => {
       try {
         const count = await getPdfPageCount(file);
@@ -48,10 +46,10 @@ export function Watermark() {
         console.error("Failed to get page count:", err);
       }
     };
+
     fetchPageCount();
   }, [file]);
 
-  // 2. Handle preview generation (Debounced)
   useEffect(() => {
     if (!file || !watermarkText.trim()) {
       const t = setTimeout(() => setPreviewUrl(null), 0);
@@ -178,9 +176,9 @@ export function Watermark() {
 
                 <div className="space-y-2">
                   <label className="text-xs text-zinc-500 uppercase tracking-wider">Position</label>
-                  <select 
-                    value={options.position} 
-                    onChange={(e) => updateOption("position", e.target.value)} 
+                  <select
+                    value={options.position}
+                    onChange={(e) => updateOption("position", e.target.value)}
                     className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none"
                   >
                     <option value="center">Center</option>
@@ -250,12 +248,12 @@ export function Watermark() {
           <div className="lg:col-span-2 flex justify-center py-4">
             <div className="w-full max-w-xl">
               {isLocked ? (
-                <UpgradeButton 
-                  reason={lockReason} 
-                  limitLabel={lockLabel} 
-                  isWalletConnected={isWalletConnected} 
-                  isPremium={isPremium} 
-                  className="w-full h-14 text-lg" 
+                <UpgradeButton
+                  reason={lockReason}
+                  limitLabel={lockLabel}
+                  isWalletConnected={isWalletConnected}
+                  isPremium={isPremium}
+                  className="w-full h-14 text-lg"
                 />
               ) : (
                 <Button onClick={handleDownload} disabled={isProcessing} className="w-full h-14 text-lg shadow-xl shadow-white/5">
