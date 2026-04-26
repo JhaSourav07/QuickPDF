@@ -3,13 +3,11 @@ import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2, Settings2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
-import { addWatermark } from "../../services/pdf.service";
+import { addWatermark, getPdfPageCount } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
-import { getPdfPageCount } from "../../services/pdf.service";
-
 
 export function Watermark() {
   const [file, setFile] = useFileStore("Watermark_file", null);
@@ -17,6 +15,7 @@ export function Watermark() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
   const lastUrlRef = useRef(null);
 
   const [options, setOptions] = useState({
@@ -27,7 +26,6 @@ export function Watermark() {
     offsetX: 0,
     offsetY: 0
   });
-  const [pageCount, setPageCount] = useState(0);
 
   const {
     isPremium,
@@ -36,9 +34,25 @@ export function Watermark() {
     isWalletConnected,
   } = useSubscription();
 
-  // Handle preview generation
+  // 1. Fetch Page Count when file changes
   useEffect(() => {
-    // FIX: Use an asynchronous check to avoid synchronous setState error
+    if (!file) {
+      setPageCount(0);
+      return;
+    }
+    const fetchPageCount = async () => {
+      try {
+        const count = await getPdfPageCount(file);
+        setPageCount(count);
+      } catch (err) {
+        console.error("Failed to get page count:", err);
+      }
+    };
+    fetchPageCount();
+  }, [file]);
+
+  // 2. Handle preview generation (Debounced)
+  useEffect(() => {
     if (!file || !watermarkText.trim()) {
       const t = setTimeout(() => setPreviewUrl(null), 0);
       return () => clearTimeout(t);
@@ -63,7 +77,7 @@ export function Watermark() {
     return () => clearTimeout(timer);
   }, [file, watermarkText, options]);
 
-  // Handle cleanup on unmount
+  // 3. Handle cleanup on unmount
   useEffect(() => {
     return () => {
       if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
@@ -71,18 +85,17 @@ export function Watermark() {
     };
   }, [originalPreviewUrl]);
 
-  // Initialize original preview
+  // 4. Initialize original preview
   useEffect(() => {
     if (!file || originalPreviewUrl) return;
     const url = file.url || URL.createObjectURL(file);
-    
-    // FIX: Defer update to pass linting rule
     const t = setTimeout(() => setOriginalPreviewUrl(url), 0);
     return () => clearTimeout(t);
   }, [file, originalPreviewUrl]);
 
+  // Subscription & Lock Logic
   const fileTooLarge = !isPremium && file && file.size > mbToBytes(FREE_LIMITS.watermark.maxFileSizeMb);
-  const isLocked = 0;
+  const isLocked = hasReachedGlobalLimit || fileTooLarge;
   const lockReason = hasReachedGlobalLimit ? "global" : "size";
   const lockLabel = fileTooLarge ? `${FREE_LIMITS.watermark.maxFileSizeMb} MB` : undefined;
 
@@ -99,6 +112,7 @@ export function Watermark() {
     setFile(null);
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
+    setPageCount(0);
   };
 
   const updateOption = (key, value) => {
@@ -115,12 +129,6 @@ export function Watermark() {
     link.click();
     document.body.removeChild(link);
   };
-  function clearFile() {
-  setFile(null);
-  setError(null);
-  setPreviewUrl(null);
-  setPageCount(0);
-}
 
   return (
     <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${file ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
@@ -139,11 +147,17 @@ export function Watermark() {
           ) : (
             <div className="space-y-8">
               <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-white/10 rounded-xl">
-                <div className="flex flex-col overflow-hidden">
+                <div className="flex flex-col overflow-hidden mr-4">
                   <span className="font-medium text-zinc-200 truncate">{file.name}</span>
-                  <span className="text-sm text-zinc-500">{formatFileSize(file.size)} • {pageCount} pages</span>
+                  <div className="flex items-center gap-2 text-sm text-zinc-500">
+                    <span>{formatFileSize(file.size)}</span>
+                    <span>•</span>
+                    <span>{pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+                  </div>
                 </div>
-                <button onClick={clearFile} className="p-2 text-zinc-500 hover:text-red-400 transition-colors"><X className="w-5 h-5" /></button>
+                <button onClick={clearFile} className="p-2 text-zinc-500 hover:text-red-400 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
               <div className="space-y-2">
@@ -152,7 +166,7 @@ export function Watermark() {
                   type="text"
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
-                  className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg uppercase outline-none"
+                  className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg uppercase outline-none focus:ring-1 focus:ring-white/20"
                 />
               </div>
 
@@ -164,7 +178,11 @@ export function Watermark() {
 
                 <div className="space-y-2">
                   <label className="text-xs text-zinc-500 uppercase tracking-wider">Position</label>
-                  <select value={options.position} onChange={(e) => updateOption("position", e.target.value)} className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg">
+                  <select 
+                    value={options.position} 
+                    onChange={(e) => updateOption("position", e.target.value)} 
+                    className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none"
+                  >
                     <option value="center">Center</option>
                     <option value="top-left">Top Left</option>
                     <option value="top-right">Top Right</option>
@@ -196,7 +214,7 @@ export function Watermark() {
                       type="number"
                       value={options.offsetX}
                       onChange={(e) => updateOption("offsetX", parseInt(e.target.value) || 0)}
-                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none"
+                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none focus:ring-1 focus:ring-white/20"
                     />
                   </div>
                   <div className="space-y-2">
@@ -205,7 +223,7 @@ export function Watermark() {
                       type="number"
                       value={options.offsetY}
                       onChange={(e) => updateOption("offsetY", parseInt(e.target.value) || 0)}
-                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none"
+                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none focus:ring-1 focus:ring-white/20"
                     />
                   </div>
                 </div>
@@ -232,7 +250,13 @@ export function Watermark() {
           <div className="lg:col-span-2 flex justify-center py-4">
             <div className="w-full max-w-xl">
               {isLocked ? (
-                <UpgradeButton reason={lockReason} limitLabel={lockLabel} isWalletConnected={isWalletConnected} isPremium={isPremium} className="w-full h-14 text-lg" />
+                <UpgradeButton 
+                  reason={lockReason} 
+                  limitLabel={lockLabel} 
+                  isWalletConnected={isWalletConnected} 
+                  isPremium={isPremium} 
+                  className="w-full h-14 text-lg" 
+                />
               ) : (
                 <Button onClick={handleDownload} disabled={isProcessing} className="w-full h-14 text-lg shadow-xl shadow-white/5">
                   {isProcessing ? (
