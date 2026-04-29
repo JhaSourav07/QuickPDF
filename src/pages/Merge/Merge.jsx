@@ -19,7 +19,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── helpers 
 let _uid = 0;
 function makeId() { return ++_uid; }
 
@@ -58,10 +58,10 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => { onDragEnd(); setOver(false); }}
       className={[
-        "relative group flex flex-col items-center gap-2 border rounded-2xl p-2.5 cursor-grab active:cursor-grabbing select-none transition-all duration-150",
+        "relative group flex flex-col items-center gap-3 border rounded-2xl p-3 cursor-grab active:cursor-grabbing select-none transition-all duration-150",
         over
           ? "border-white/40 bg-white/[0.06] scale-[1.02]"
-          : "bg-zinc-900/60 border-white/[0.06] hover:border-white/20",
+          : "bg-zinc-900/60 border-white/[0.06] hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:scale-[1.02]",
       ].join(" ")}
     >
       {/* Order badge */}
@@ -73,7 +73,7 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
 
       {/* Thumbnail area */}
       <div
-        className="w-full overflow-hidden rounded-xl bg-zinc-800 flex items-center justify-center relative"
+        className="w-full overflow-hidden rounded-xl bg-zinc-800/80 border border-white/[0.05] flex items-center justify-center relative"
         style={{ minHeight: 120 }}
       >
         {item.thumb ? (
@@ -111,10 +111,20 @@ function PdfCard({ item, onRemove, onPreview, onDragStart, onDragEnter, onDragEn
         </button>
       </div>
 
-      {/* Name + size */}
-      <div className="w-full px-1"> 
-        <p className="text-[11px] text-zinc-300 font-medium truncate">{item.name}</p>
-        <p className="text-[10px] text-zinc-500">{formatFileSize(item.size)}{item.numPages != null && ` · ${item.numPages} pages`}</p>
+     {/* File Info */}
+      <div className="w-full px-2 mt-1 flex flex-col gap-1">
+  
+        {/* File name */}
+        <p className="text-xs font-semibold text-white truncate leading-tight">
+          {item.name}
+        </p>
+
+        {/* Metadata */}
+        <p className="text-[11px] text-zinc-400 leading-tight">
+        {formatFileSize(item.size)}
+        {item.numPages != null && ` • ${item.numPages} pages`}
+        </p>
+
       </div>
 
       {/* Remove */}
