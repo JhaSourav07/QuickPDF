@@ -102,7 +102,7 @@ export function Watermark() {
   setFile(selectedFile);
 
   const count = await getPdfPageCount(selectedFile);
-  console.log("Page count:", count);  
+  
   setPageCount(count);
   setPreviewUrl(null);
 };
