@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
-import { Stamp, X, Download, Loader2, Settings2 } from "lucide-react";
+import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { addWatermark, getPdfPageCount } from "../../services/pdf.service";
@@ -8,13 +8,14 @@ import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
-import { getPdfPageCount } from "../../services/pdf.service";
+
 
 
 export function Watermark() {
   const [file, setFile] = useFileStore("Watermark_file", null);
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [pageCount, setPageCount] = useState(0);
@@ -26,68 +27,41 @@ export function Watermark() {
     isWalletConnected,
   } = useSubscription();
 
-  // 1. Fetch Page Count ONLY when a file exists
-  useEffect(() => {
-    if (!file) return; // Just exit, don't set state here
-
-    const fetchPageCount = async () => {
-      try {
-        const count = await getPdfPageCount(file);
-        setPageCount(count);
-      } catch (err) {
-        console.error("Failed to get page count:", err);
-      }
-    };
-
-    fetchPageCount();
-  }, [file]);
-
-  useEffect(() => {
-    if (!file || !watermarkText.trim()) {
-      const t = setTimeout(() => setPreviewUrl(null), 0);
-      return () => clearTimeout(t);
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        setIsProcessing(true);
-        const blob = await addWatermark(file, watermarkText, options);
-        const url = URL.createObjectURL(blob);
-
-        if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
-        lastUrlRef.current = url;
-        setPreviewUrl(url);
-      } catch (err) {
-        console.error("Preview failed", err);
-      } finally {
-        setIsProcessing(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [file, watermarkText, options]);
-
-  // 3. Handle cleanup on unmount
   useEffect(() => {
     return () => {
-      if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
-      if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+      if (originalPreviewUrl) {
+        URL.revokeObjectURL(originalPreviewUrl);
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
     };
-  }, [originalPreviewUrl]);
+  }, [originalPreviewUrl, previewUrl]);
 
-  // 4. Initialize original preview
+  // Recreate original preview URL when file is loaded from storage but preview is missing
   useEffect(() => {
-    if (!file || originalPreviewUrl) return;
-    const url = file.url || URL.createObjectURL(file);
-    const t = setTimeout(() => setOriginalPreviewUrl(url), 0);
-    return () => clearTimeout(t);
-  }, [file, originalPreviewUrl]);
+    if (!file || previewUrl || originalPreviewUrl) return;
 
-  // Subscription & Lock Logic
-  const fileTooLarge = !isPremium && file && file.size > mbToBytes(FREE_LIMITS.watermark.maxFileSizeMb);
+    const originalUrl = file.url || URL.createObjectURL(file);
+    queueMicrotask(() => setOriginalPreviewUrl(originalUrl));
+
+    return () => {
+      if (!file.url) {
+        URL.revokeObjectURL(originalUrl);
+      }
+    };
+  }, [file, previewUrl, originalPreviewUrl]);
+
+  const fileTooLarge =
+    !isPremium &&
+    file &&
+    file.size > mbToBytes(FREE_LIMITS.watermark.maxFileSizeMb);
+
   const isLocked = hasReachedGlobalLimit || fileTooLarge;
   const lockReason = hasReachedGlobalLimit ? "global" : "size";
-  const lockLabel = fileTooLarge ? `${FREE_LIMITS.watermark.maxFileSizeMb} MB` : undefined;
+  const lockLabel = fileTooLarge
+    ? `${FREE_LIMITS.watermark.maxFileSizeMb} MB`
+    : undefined;
 
   const handleFileSelected = async (selectedFiles) => {
   const selectedFile = selectedFiles[0];
@@ -114,19 +88,17 @@ export function Watermark() {
       setIsProcessing(true);
       setError(null);
 
-  const updateOption = (key, value) => {
-    setOptions(prev => ({ ...prev, [key]: value }));
-  };
+      const watermarkedBlob = await addWatermark(file, watermarkText);
+      const url = URL.createObjectURL(watermarkedBlob);
 
-  const handleDownload = async () => {
-    if (!previewUrl) return;
-    await incrementUsage();
-    const link = document.createElement("a");
-    link.href = previewUrl;
-    link.download = `QuickPDF_Watermarked_${Date.now()}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      setPreviewUrl(url);
+      await incrementUsage();
+    } catch {
+      setError("Could not read the PDF file. It might be corrupted or encrypted.");
+      setFile(null);
+    } finally {
+      setIsProcessing(false);
+    }
   };
   function clearFile() {
   setFile(null);
@@ -136,34 +108,49 @@ export function Watermark() {
 }
 
   return (
-    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${file ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
+    <div className={`mx-auto py-8 sm:py-12 px-4 sm:px-6 transition-all duration-500 ease-in-out ${previewUrl || (file && originalPreviewUrl) ? 'w-full max-w-[1600px]' : 'max-w-3xl'}`}>
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-white mb-4">
           <Stamp className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-extrabold text-white mb-4">Add Watermark</h1>
-        <p className="text-lg text-zinc-400">Secure browser-based watermarking.</p>
+
+        <h1 className="text-4xl font-extrabold text-white mb-4">
+          Add Watermark
+        </h1>
+
+        <p className="text-lg text-zinc-400">
+          Stamp text across your document securely in your browser.
+          {!isPremium && (
+            <span className="block text-sm text-zinc-600 mt-1">
+              Free tier: files up to{" "}
+              {FREE_LIMITS.watermark.maxFileSizeMb} MB
+            </span>
+          )}
+        </p>
       </div>
 
-      <div className={file ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
+      <div className={previewUrl || (file && originalPreviewUrl) ? "grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-8 items-start" : ""}>
         <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
-          {!file ? (
-            <Dropzone onFilesSelected={handleFileSelected} multiple={false} text="Click to upload a PDF" />
-          ) : (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-white/10 rounded-xl">
-                <div className="flex flex-col overflow-hidden mr-4">
-                  <span className="font-medium text-zinc-200 truncate">{file.name}</span>
-                  <div className="flex items-center gap-2 text-sm text-zinc-500">
-                    <span>{formatFileSize(file.size)}</span>
-                    <span>•</span>
-                    <span>{pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
-                  </div>
-                </div>
-                <button onClick={clearFile} className="p-2 text-zinc-500 hover:text-red-400 transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+          {error && (
+          <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-lg text-sm border border-red-500/20">
+            {error}
+          </div>
+        )}
+
+        {!file ? (
+          <Dropzone
+            onFilesSelected={handleFileSelected}
+            multiple={false}
+            disabled={isProcessing}
+            text="Click to upload a PDF"
+          />
+        ) : (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-white/10 rounded-xl">
+              <div className="flex flex-col overflow-hidden mr-4">
+                <span className="font-medium text-zinc-200 truncate">
+                  {file.name}
+                </span>
 
                 <span className="text-sm text-zinc-500 mt-0.5">
                   {formatFileSize(file.size)} • {pageCount} pages
@@ -175,102 +162,105 @@ export function Watermark() {
                 </span>
               </div>
 
-              <div className="space-y-6 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-2 text-zinc-300 font-medium">
-                  <Settings2 className="w-4 h-4" />
-                  <h3>Style & Position</h3>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-zinc-500 uppercase tracking-wider">Position</label>
-                  <select
-                    value={options.position}
-                    onChange={(e) => updateOption("position", e.target.value)}
-                    className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none"
-                  >
-                    <option value="center">Center</option>
-                    <option value="top-left">Top Left</option>
-                    <option value="top-right">Top Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="bottom-right">Bottom Right</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-zinc-500 uppercase">Size: {options.fontSize}px</label>
-                    <input type="range" min="10" max="200" value={options.fontSize} onChange={(e) => updateOption("fontSize", parseInt(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs text-zinc-500 uppercase">Opacity: {Math.round(options.opacity * 100)}%</label>
-                    <input type="range" min="0.05" max="1" step="0.05" value={options.opacity} onChange={(e) => updateOption("opacity", parseFloat(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-zinc-500 uppercase">Rotation: {options.rotation}°</label>
-                  <input type="range" min="-90" max="90" value={options.rotation} onChange={(e) => updateOption("rotation", parseInt(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider">Offset X</label>
-                    <input
-                      type="number"
-                      value={options.offsetX}
-                      onChange={(e) => updateOption("offsetX", parseInt(e.target.value) || 0)}
-                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none focus:ring-1 focus:ring-white/20"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs text-zinc-500 uppercase tracking-wider">Offset Y</label>
-                    <input
-                      type="number"
-                      value={options.offsetY}
-                      onChange={(e) => updateOption("offsetY", parseInt(e.target.value) || 0)}
-                      className="w-full h-10 px-3 bg-black border border-white/10 text-white rounded-lg outline-none focus:ring-1 focus:ring-white/20"
-                    />
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={clearFile}
+                className="p-2 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
-        </div>
 
-        {file && (
-          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh] relative">
-            <h2 className="text-lg font-semibold text-white mb-6">
-              {isProcessing ? "Updating Preview..." : previewUrl ? "Preview with Watermark" : "Original PDF"}
-            </h2>
-            <iframe
-              src={previewUrl || originalPreviewUrl}
-              title="PDF Preview"
-              className={`w-full flex-grow rounded-xl border border-white/10 bg-white transition-opacity duration-300 ${isProcessing ? 'opacity-50' : 'opacity-100'}`}
-              style={{ height: "clamp(400px, 65vh, 800px)" }}
-            />
-          </div>
-        )}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-zinc-400">
+                Watermark Text
+              </label>
 
-        {previewUrl && (
-          <div className="lg:col-span-2 flex justify-center py-4">
-            <div className="w-full max-w-xl">
+              <input
+                type="text"
+                value={watermarkText}
+                onChange={(e) => setWatermarkText(e.target.value)}
+                placeholder="e.g., CONFIDENTIAL"
+                className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-white/20 outline-none transition-all placeholder:text-zinc-600 uppercase"
+              />
+            </div>
+
+            <div className="flex justify-end border-t border-white/10 pt-6">
               {isLocked ? (
                 <UpgradeButton
                   reason={lockReason}
                   limitLabel={lockLabel}
                   isWalletConnected={isWalletConnected}
                   isPremium={isPremium}
-                  className="w-full h-14 text-lg"
+                  className="w-full sm:w-auto"
                 />
               ) : (
-                <Button onClick={handleDownload} disabled={isProcessing} className="w-full h-14 text-lg shadow-xl shadow-white/5">
+                <Button
+                  onClick={handleProcess}
+                  disabled={isProcessing || !watermarkText.trim()}
+                  className="w-full sm:w-auto"
+                >
                   {isProcessing ? (
-                    <><Loader2 className="w-6 h-6 mr-3 animate-spin" />Processing...</>
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Processing...
+                    </>
                   ) : (
-                    <><Download className="w-6 h-6 mr-3" />Download Watermarked PDF</>
+                    <>
+                      <Download className="w-5 h-5 mr-2" />
+                      Apply Watermark
+                    </>
                   )}
                 </Button>
               )}
+            </div>
+
+          </div>
+        )}
+        </div>
+
+        {originalPreviewUrl && !previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Original PDF
+            </h2>
+
+            <iframe
+              src={originalPreviewUrl}
+              title="Original PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+          </div>
+        )}
+
+        {previewUrl && (
+          <div className="bg-[#0a0a0a] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl flex flex-col h-full min-h-[60vh]">
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Preview with Watermark
+            </h2>
+
+            <iframe
+              src={previewUrl}
+              title="Watermarked PDF Preview"
+              className="w-full flex-grow rounded-xl border border-white/10 bg-white mb-6"
+              style={{ height: "clamp(320px, 60vh, 600px)" }}
+            />
+
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = previewUrl;
+                  link.download = `QuickPDF_Watermarked_${Date.now()}.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download PDF
+              </Button>
             </div>
           </div>
         )}
