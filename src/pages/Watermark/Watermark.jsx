@@ -3,7 +3,7 @@ import { useFileStore } from "../../hooks/useFileStore";
 import { Stamp, X, Download, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
-import { addWatermark } from "../../services/pdf.service";
+import { addWatermark, getPdfPageCount } from "../../services/pdf.service";
 import { Dropzone } from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
 import { useSubscription } from "../../hooks/useSubscription";
