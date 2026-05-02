@@ -136,6 +136,89 @@
     }
   }
 
+  /* NAVBAR BASE */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 40px;
+
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+/* LOGO */
+.logo {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* MENU */
+.menu {
+  display: flex;
+  list-style: none;
+  gap: 36px; /* better spacing */
+}
+
+/* LINKS */
+.menu li a {
+  position: relative;
+  text-decoration: none;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  transition: all 0.25s ease;
+}
+
+/* HOVER EFFECT (smooth slide underline) */
+.menu li a::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 0%;
+  height: 2px;
+  background: #6366f1;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.menu li a:hover {
+  color: #6366f1;
+}
+
+.menu li a:hover::after {
+  width: 100%;
+}
+
+/* SUBTLE ICON STYLE (for dropdown icons) */
+.menu li a svg {
+  opacity: 0.6;
+  transition: transform 0.3s ease;
+}
+
+/* ICON ANIMATION ON HOVER */
+.menu li a:hover svg {
+  transform: translateY(2px);
+  opacity: 1;
+}
+
   @media (max-width: 1024px) {
     margin-top: 20px;
     flex-wrap: wrap;
