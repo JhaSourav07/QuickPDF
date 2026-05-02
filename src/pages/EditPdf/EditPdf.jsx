@@ -22,6 +22,13 @@ const ANN_TOOLS = [
   { id: "rect",      label: "Rectangle" },
   { id: "eraser",    label: "Eraser"    },
 ];
+const TOOL_ICONS = {
+  draw: Pencil,
+  text: Type,
+  highlight: Highlighter,
+  rect: Square,
+  eraser: Eraser,
+};
 const COLORS = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#ec4899","#000000","#ffffff"];
 const HINTS  = { draw:"Click and drag freely", text:"Click to place a text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
 const CURSOR = { draw:"crosshair", text:"text", highlight:"crosshair", rect:"crosshair", eraser:"cell" };
@@ -284,9 +291,9 @@ export function EditPdf() {
           <div className="h-4 w-px bg-white/10" />
           <div className="flex gap-1">
             {ANN_TOOLS.map(({ id, label }) => (
-              <button key={id} title={label} onClick={() => setTool(id)}
+              <button key={id} type="button" aria-label={label} title={label} onClick={() => setTool(id)}
                 className={`p-2 rounded-xl transition-all ${tool===id?"bg-white text-black":"text-zinc-400 hover:text-white hover:bg-white/10"}`}>
-                
+                {React.createElement(TOOL_ICONS[id], { className: "w-4 h-4" })}
               </button>
             ))}
           </div>
