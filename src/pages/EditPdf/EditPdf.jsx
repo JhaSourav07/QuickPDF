@@ -16,19 +16,12 @@ import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 // ── constants ────────────────────────────────────────────────────────────────
 const RENDER_SCALE = 1.5;
 const ANN_TOOLS = [
-  { id: "draw",      label: "Draw"      },
-  { id: "text",      label: "Text"      },
-  { id: "highlight", label: "Highlight" },
-  { id: "rect",      label: "Rectangle" },
-  { id: "eraser",    label: "Eraser"    },
+  { id: "draw",      label: "Draw",      icon: Pencil },
+  { id: "text",      label: "Text",      icon: Type },
+  { id: "highlight", label: "Highlight", icon: Highlighter },
+  { id: "rect",      label: "Rectangle", icon: Square },
+  { id: "eraser",    label: "Eraser",    icon: Eraser },
 ];
-const TOOL_ICONS = {
-  draw: Pencil,
-  text: Type,
-  highlight: Highlighter,
-  rect: Square,
-  eraser: Eraser,
-};
 const COLORS = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#ec4899","#000000","#ffffff"];
 const HINTS  = { draw:"Click and drag freely", text:"Click to place a text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
 const CURSOR = { draw:"crosshair", text:"text", highlight:"crosshair", rect:"crosshair", eraser:"cell" };
@@ -290,10 +283,10 @@ export function EditPdf() {
         {mode === "annotate" && <>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex gap-1">
-            {ANN_TOOLS.map(({ id, label }) => (
-              <button key={id} type="button" aria-label={label} title={label} onClick={() => setTool(id)}
+            {ANN_TOOLS.map(({ id, label, icon }) => (
+              <button key={id} type="button" aria-label={label} aria-pressed={tool===id} title={label} onClick={() => setTool(id)}
                 className={`p-2 rounded-xl transition-all ${tool===id?"bg-white text-black":"text-zinc-400 hover:text-white hover:bg-white/10"}`}>
-                {React.createElement(TOOL_ICONS[id], { className: "w-4 h-4" })}
+                {React.createElement(icon, { className: "w-4 h-4" })}
               </button>
             ))}
           </div>
@@ -422,7 +415,7 @@ export function EditPdf() {
                 onChange={e => setTextBox(t => ({ ...t, value: e.target.value }))}
                 onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { commitTextBox(); e.preventDefault(); } if (e.key==="Escape") setTextBox(null); }}
                 onBlur={commitTextBox}
-                style={{ position:"absolute", left:textBox.x, top:textBox.y - fontSize, background:"transparent", border:"1px dashed rgba(255,255,255,0.4)", color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:"2px 4px", minWidth:80, minHeight:fontSize+8 }}
+                style={{ position:"absolute", left:textBox.x, top:textBox.y - fontSize, background:"rgba(0,0,0,0.82)", border:"1px dashed rgba(255,255,255,0.4)", color, caretColor: color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:"2px 4px", minWidth:80, minHeight:fontSize+8, zIndex:15 }}
               />
             )}
           </div>

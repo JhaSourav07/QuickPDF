@@ -75,9 +75,12 @@ describe("EditPdf", () => {
   it("shows the annotation tools including text and lets users place a text box", () => {
     const { container } = render(<EditPdf />);
 
-    expect(screen.getByLabelText("Text")).toBeInTheDocument();
+    const textTool = screen.getByLabelText("Text");
+    expect(textTool).toBeInTheDocument();
+    expect(textTool).toHaveAttribute("aria-pressed", "false");
 
-    fireEvent.click(screen.getByLabelText("Text"));
+    fireEvent.click(textTool);
+    expect(textTool).toHaveAttribute("aria-pressed", "true");
     const canvas = container.querySelector("canvas");
     expect(canvas).not.toBeNull();
 
