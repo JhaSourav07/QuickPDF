@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, degrees, StandardFonts } from "pdf-lib";
 import { encryptPDF } from "@pdfsmaller/pdf-encrypt-lite";
+import { decryptPDF } from "@pdfsmaller/pdf-decrypt-lite";
 import * as pdfjsLib from "pdfjs-dist";
 
 // Let Vite point pdf.js at the bundled worker for us.
@@ -421,6 +422,37 @@ export const lockPdf = async (file, userPassword, ownerPassword) => {
   );
 
   return new Blob([encryptedBytes], { type: "application/pdf" });
+};
+/**
+ * Decrypts a locked PDF and returns a password-free Blob.
+ * 
+ * @param {File} file - The locked PDF file.
+ * @param {string} password - The password to unlock the PDF.
+ * @returns {Promise<Blob>} - The unlocked PDF as a Blob.
+ */
+export const unlockPdf = async (file, password) => {
+  if (!file) throw new Error("No file provided.");
+  if (!password) throw new Error("A password is required.");
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const encryptedBytes = new Uint8Array(arrayBuffer);
+
+    // 1. Decrypt the raw bytes using the client-side decryption engine
+    const decryptedBytes = await decryptPDF(encryptedBytes, password);
+
+    // 2. Load the decrypted bytes into pdf-lib to ensure it is structurally 
+    // sound and to let pdf-lib cleanly rebuild the PDF without any residual
+    // encryption dictionary metadata.
+    const pdfDoc = await PDFDocument.load(decryptedBytes);
+    const finalBytes = await pdfDoc.save();
+
+    return new Blob([finalBytes], { type: 'application/pdf' });
+  } catch (error) {
+    console.error("Error unlocking PDF:", error);
+    // If the password is wrong, decryptPDF will fail
+    throw new Error("Failed to unlock PDF. Please verify the password is correct.");
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

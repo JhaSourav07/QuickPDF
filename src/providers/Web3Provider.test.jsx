@@ -1,20 +1,21 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const getDefaultConfigMock = vi.fn();
 
-//mock all the libraries, so that it doesn't run out of time!
+// Mock all the Web3 libraries to prevent infinite background network polling
 vi.mock('@rainbow-me/rainbowkit', () => ({
   getDefaultConfig: (args) => {
     getDefaultConfigMock(args);
-    return {};
+    return { connectors: [] }; // Return a dummy object so Wagmi doesn't crash
   },
-  RainbowKitProvider: ({ children }) => children, // Just pass the UI through
+  RainbowKitProvider: ({ children }) => children,
   darkTheme: vi.fn(),
 }));
 
 vi.mock('wagmi', () => ({
   WagmiProvider: ({ children }) => children,
-
+  createConfig: vi.fn(),
+  http: vi.fn(),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -22,34 +23,41 @@ vi.mock('@tanstack/react-query', () => ({
   QueryClientProvider: ({ children }) => children,
 }));
 
+// CRITICAL: Mock Reown/AppKit/Web3Modal to stop background network requests!
+vi.mock('@reown/appkit/react', () => ({
+  createAppKit: vi.fn(),
+}));
+vi.mock('@web3modal/wagmi/react', () => ({
+  createWeb3Modal: vi.fn(),
+}));
+
 describe('Web3Provider Fallback', () => {
+  beforeEach(() => {
+    // Reset modules ensures the dynamic import runs fresh every time
+    vi.resetModules(); 
+    vi.restoreAllMocks();
+  });
 
-    // This is the Spy where we clean up previously run test
-    beforeEach(() => {
-        vi.resetModules(); //This resets 
-        vi.restoreAllMocks();
-    });
+  it('should trigger the NSoC Dev Tip warning when no Project ID is provided', async () => {
+    // 1. Force the environment variable to be empty so the fallback triggers
+    vi.stubEnv('VITE_WALLETCONNECT_PROJECT_ID', '');
 
-    it('should trigger the NSoC Dev Tip warning when no Project ID is provided', async () => {
-        // //Let's think we don't have the projectID
-        // //stub here means forcing to be empty
-        // vi.stubEnv('VITE_WALLETCONNECT_PROJECT_ID', ' ');
-        
-        //This is hidden camera on console.warn
-        // const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // 2. Hide the console.warn output but spy on it
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    
-        //importing the code to execute this logic
-        await import('./Web3Provider');
+    // 3. Dynamically import the provider to execute top-level logic
+    await import('./Web3Provider');
 
-        //verify the results
-        // expect(warnSpy).toHaveBeenCalledWith(
-        //     expect.stringContaining("NSoC Dev Tip")
-        // );
+    // 4. Verify the fallback warning was printed to the console
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("NSoC Dev Tip")
+    );
 
-        const lastCall = getDefaultConfigMock.mock.calls[0][0];
+    // 5. Verify the fallback ID was properly passed into the RainbowKit config
+    const lastCall = getDefaultConfigMock.mock.calls[0][0];
+    expect(lastCall.projectId).toBe("3324687d602334057884d59a72179836");
 
-        expect(lastCall.projectId).toBe("3324687d602334057884d59a72179836");
-    },15000);
+    // 6. Clean up the mocked environment
+    vi.unstubAllEnvs();
+  });
 });
-

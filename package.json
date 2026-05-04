@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@pdfsmaller/pdf-decrypt-lite": "^1.0.0",
     "@pdfsmaller/pdf-encrypt-lite": "^1.0.2",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tanstack/react-query": "^5.95.2",
@@ -26,7 +27,8 @@
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",
     "viem": "^2.47.6",
-    "wagmi": "^2.19.5"
+    "wagmi": "^2.19.5",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
