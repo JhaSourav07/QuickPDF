@@ -45,7 +45,7 @@ export function LockPdf() {
 
   const LIMIT_MB      = FREE_LIMITS.lockPdf.maxFileSizeMb;
   const isOverSize    = !isPremium && !!file && file.size > mbToBytes(LIMIT_MB);
-  const isLocked      = 0;
+  const isLocked      = !isPremium && (isOverSize || hasReachedGlobalLimit);
   const paywallReason = hasReachedGlobalLimit ? "global" : "size";
 
   const strength    = calcStrength(password);

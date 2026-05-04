@@ -28,7 +28,7 @@ export function UnlockPdf() {
   // Assuming FREE_LIMITS has lockPdf/unlockPdf configurations (using lockPdf limits as a baseline)
   const LIMIT_MB      = FREE_LIMITS.lockPdf?.maxFileSizeMb || 50; 
   const isOverSize    = !isPremium && !!file && file.size > mbToBytes(LIMIT_MB);
-  const isLocked      = 0;
+  const isLocked      = !isPremium && (isOverSize || hasReachedGlobalLimit);
   const paywallReason = hasReachedGlobalLimit ? "global" : "size";
 
   const canSubmit   = !!file && password.length > 0 && !isProcessing;
