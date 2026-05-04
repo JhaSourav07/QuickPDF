@@ -21,6 +21,7 @@ import { PageNumbers } from "./pages/PageNumbers/PageNumbers";
 import { LockPdf }     from "./pages/LockPdf/LockPdf";
 import { EditPdf }     from "./pages/EditPdf/EditPdf";
 import { Admin }       from "./pages/Admin/Admin";
+import UnlockPdf from "./pages/Unlockpdf/Unlockpdf";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
             <Route path="/lock-pdf"     element={<LockPdf />} />
             <Route path="/edit-pdf"     element={<EditPdf />} />
             <Route path="/admin"        element={<Admin />} />
+            <Route path="/unlock-pdf" element={<UnlockPdf />} />
           </Routes>
         </PageContainer>
       </div>

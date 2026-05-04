@@ -1,78 +1,58 @@
 import React, { useState } from "react";
 import { useFileStore } from "../../hooks/useFileStore";
 import {
-  Lock, Eye, EyeOff, X, Download, Loader2,
-  CheckCircle2, ShieldCheck, AlertTriangle,
+  Unlock, Eye, EyeOff, X, Loader2,
+  CheckCircle2, ShieldCheck, AlertTriangle, FileText
 } from "lucide-react";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Button }        from "../../components/ui/Button";
 import { UpgradeButton } from "../../components/ui/UpgradeButton";
 import { Dropzone }      from "../../components/pdf/Dropzone";
 import { formatFileSize } from "../../utils/formatters";
-import { lockPdf }       from "../../services/pdf.service";
+import { unlockPdf, getPdfPageCount } from "../../services/pdf.service";
 import { useSubscription } from "../../hooks/useSubscription";
 import { FREE_LIMITS, mbToBytes } from "../../config/limits";
-import { getPdfPageCount } from "../../services/pdf.service";
 
-
-/* password strength helpers */
-function calcStrength(pw) {
-  if (!pw) return 0;
-  let score = 0;
-  if (pw.length >= 8)  score++;
-  if (pw.length >= 12) score++;
-  if (/[A-Z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  return score; // 0-5
-}
-const STRENGTH_LABELS = ["", "Weak", "Weak", "Fair", "Strong", "Very strong"];
-const STRENGTH_COLORS = ["", "#ef4444", "#f97316", "#eab308", "#22c55e", "#22c55e"];
-
-export function LockPdf() {
-  const [file, setFile] = useFileStore("LockPdf_file", null);
+export function UnlockPdf() {
+  // Using useFileStore to persist the file state across navigation
+  const [file, setFile] = useFileStore("UnlockPdf_file", null);
   const [password, setPassword]     = useState("");
-  const [confirm, setConfirm]       = useState("");
   const [showPw, setShowPw]         = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [done, setDone]             = useState(false);
   const [error, setError]           = useState(null);
-  const [pageCount, setPageCount] = useState(0);
+  const [pageCount, setPageCount]   = useState(0);
 
-  const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } =
-    useSubscription();
+  const { isPremium, isWalletConnected: isConnected, hasReachedGlobalLimit, incrementUsage } = useSubscription();
 
-  const LIMIT_MB      = FREE_LIMITS.lockPdf.maxFileSizeMb;
+  // Assuming FREE_LIMITS has lockPdf/unlockPdf configurations (using lockPdf limits as a baseline)
+  const LIMIT_MB      = FREE_LIMITS.lockPdf?.maxFileSizeMb || 50; 
   const isOverSize    = !isPremium && !!file && file.size > mbToBytes(LIMIT_MB);
   const isLocked      = 0;
   const paywallReason = hasReachedGlobalLimit ? "global" : "size";
 
-  const strength    = calcStrength(password);
-  const mismatch    = confirm.length > 0 && password !== confirm;
-  const canSubmit   = !!file && password.length > 0 && password === confirm && !isProcessing;
+  const canSubmit   = !!file && password.length > 0 && !isProcessing;
 
-  async function handleLock() {
+  async function handleUnlock() {
     if (!canSubmit) return;
+    
     setIsProcessing(true);
     setError(null);
     setDone(false);
+    
     try {
-      const blob = await lockPdf(file, password);
+      const blob = await unlockPdf(file, password);
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement("a");
       a.href     = url;
-      a.download = `locked_${file.name}`;
+      a.download = `unlocked_${file.name}`;
       a.click();
       URL.revokeObjectURL(url);
+      
       await incrementUsage();
       setDone(true);
     } catch (err) {
-      setError(
-        err?.message?.includes("password") || err?.message?.includes("encrypted")
-          ? "This PDF is already encrypted. Upload an unlocked file."
-          : "Failed to lock the PDF. It may be corrupted or encrypted."
-      );
+      setError("Failed to unlock the PDF. Please check that the password is correct.");
       console.error(err);
     } finally {
       setIsProcessing(false);
@@ -82,7 +62,6 @@ export function LockPdf() {
   function reset() {
     setFile(null);
     setPassword("");
-    setConfirm("");
     setDone(false);
     setError(null);
   }
@@ -98,14 +77,14 @@ export function LockPdf() {
           transition={{ duration: 0.6, type: "spring" }}
           className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white text-black mb-6 shadow-[0_0_50px_rgba(255,255,255,0.15)]"
         >
-          <Lock className="w-10 h-10" />
+          <Unlock className="w-10 h-10" />
         </Motion.div>
 
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">
-          Lock PDF
+          Unlock PDF
         </h1>
         <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">
-          Password-protect your document entirely in the browser — nothing is uploaded to any server.
+          Remove password security from your document entirely in the browser — nothing is uploaded to any server.
         </p>
 
         {/* global-limit banner */}
@@ -125,20 +104,20 @@ export function LockPdf() {
       {/* ── Drop zone ── */}
       {!file ? (
         <Dropzone
-  onFilesSelected={async (f) => {
-    const selectedFile = f[0];
-    if (!selectedFile) return;
+          onFilesSelected={async (f) => {
+            const selectedFile = f[0];
+            if (!selectedFile) return;
 
-    setFile(selectedFile);
+            setFile(selectedFile);
 
-    const count = await getPdfPageCount(selectedFile);
-    setPageCount(count);
+            const count = await getPdfPageCount(selectedFile);
+            setPageCount(count);
 
-    setDone(false);
-  }}
-  multiple={false}
-  text="Drop a PDF to lock it"
-/>
+            setDone(false);
+          }}
+          multiple={false}
+          text="Drop a locked PDF to unlock it"
+        />
       ) : (
         <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
@@ -172,7 +151,7 @@ export function LockPdf() {
             {/* File info row */}
             <div className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-white/[0.06] rounded-2xl">
               <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                <Lock className="w-5 h-5 text-zinc-400" />
+                <FileText className="w-5 h-5 text-zinc-400" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{file.name}</p>
@@ -189,14 +168,14 @@ export function LockPdf() {
             {/* Password field */}
             <div className="space-y-2">
               <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold">
-                Password
+                Current PDF Password
               </label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setDone(false); }}
-                  placeholder="Enter a strong password"
+                  onChange={(e) => { setPassword(e.target.value); setDone(false); setError(null); }}
+                  placeholder="Enter the password to unlock..."
                   className="w-full h-12 px-4 pr-12 bg-zinc-900/60 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white/30 transition-colors"
                   autoComplete="new-password"
                 />
@@ -208,72 +187,13 @@ export function LockPdf() {
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-
-              {/* Strength bar */}
-              {password.length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex gap-1 h-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-full transition-all duration-300"
-                        style={{
-                          background: i <= strength ? STRENGTH_COLORS[strength] : "#27272a",
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs" style={{ color: STRENGTH_COLORS[strength] }}>
-                    {STRENGTH_LABELS[strength]}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Confirm password field */}
-            <div className="space-y-2">
-              <label className="block text-xs text-zinc-500 uppercase tracking-widest font-semibold">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={confirm}
-                  onChange={(e) => { setConfirm(e.target.value); setDone(false); }}
-                  placeholder="Re-enter your password"
-                  className={[
-                    "w-full h-12 px-4 pr-12 bg-zinc-900/60 border rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none transition-colors",
-                    mismatch
-                      ? "border-red-500/50 focus:border-red-500/70"
-                      : "border-white/10 focus:border-white/30",
-                  ].join(" ")}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors"
-                >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              <AnimatePresence>
-                {mismatch && (
-                  <Motion.p
-                    initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="text-xs text-red-400"
-                  >
-                    Passwords don't match
-                  </Motion.p>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Security note */}
             <div className="flex items-start gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
               <ShieldCheck className="w-4 h-4 text-zinc-500 mt-0.5 shrink-0" />
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Encryption is performed <span className="text-zinc-300 font-medium">entirely in your browser</span> using RC4-128. No file or password is ever sent to a server. Keep a copy of your password, we cannot recover it.
+                Decryption is performed <span className="text-zinc-300 font-medium">entirely in your browser</span>. No file or password is ever sent to a server. A new, unlocked copy will be downloaded to your device.
               </p>
             </div>
 
@@ -289,15 +209,15 @@ export function LockPdf() {
                 />
               ) : (
                 <Button
-                  onClick={handleLock}
+                  onClick={handleUnlock}
                   disabled={!canSubmit}
                   className="w-full h-16 text-lg font-bold rounded-2xl bg-white text-black hover:bg-zinc-200 transition-all active:scale-[0.98] shadow-xl disabled:opacity-40"
                 >
                   {isProcessing
-                    ? <><Loader2 className="animate-spin mr-3 w-5 h-5" />Encrypting…</>
+                    ? <><Loader2 className="animate-spin mr-3 w-5 h-5" />Unlocking…</>
                     : done
                     ? <><CheckCircle2 className="mr-3 w-5 h-5 text-emerald-500" />Downloaded!</>
-                    : <><Lock className="mr-3 w-5 h-5" />Lock &amp; Download</>
+                    : <><Unlock className="mr-3 w-5 h-5" />Unlock &amp; Download</>
                   }
                 </Button>
               )}
@@ -314,3 +234,5 @@ export function LockPdf() {
     </div>
   );
 }
+
+export default UnlockPdf;
