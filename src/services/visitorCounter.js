@@ -10,10 +10,7 @@ import {
 
 const COUNTER_DOC = doc(db, 'stats', 'visitors');
 
-/**
- * Atomically increments the visitor count by 1.
- * Creates the document if it doesn't exist yet.
- */
+
 export async function incrementVisitorCount() {
   try {
     const snap = await getDoc(COUNTER_DOC);
