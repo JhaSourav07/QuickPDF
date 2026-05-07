@@ -49,7 +49,7 @@ describe('Web3Provider Fallback', () => {
 
         const lastCall = getDefaultConfigMock.mock.calls[0][0];
 
-        expect(lastCall.projectId).toBe("3324687d602334057884d59a72179836");
+        expect(lastCall.projectId).toBe("3bd597c8fe6c25ddc24a098916890420");
     },15000);
 });
 
