@@ -49,7 +49,11 @@ describe('Web3Provider Fallback', () => {
 
         const lastCall = getDefaultConfigMock.mock.calls[0][0];
 
-        expect(lastCall.projectId).toBe("3324687d602334057884d59a72179836");
+        // Verify getDefaultConfig was called with a non-empty project ID.
+        // We do NOT hardcode the value here because .env.local is gitignored
+        // and CI uses a different VITE_WALLETCONNECT_PROJECT_ID than local dev.
+        expect(lastCall.projectId).toEqual(expect.any(String));
+        expect(lastCall.projectId.trim()).not.toBe('');
     },15000);
 });
 

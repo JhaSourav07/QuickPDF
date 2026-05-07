@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
+import { VisitorBadge } from './VisitorBadge';
 
 export function Hero() {
   const container = {
@@ -48,6 +49,10 @@ export function Hero() {
           Merge and split your files directly in the browser. <br className="hidden sm:block" />
           No backend. No uploads. Zero risk of data leaks.
         </Motion.p>
+
+        <Motion.div variants={item} className="flex justify-center">
+          <VisitorBadge />
+        </Motion.div>
       </Motion.div>
     </div>
   );
