@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { incrementVisitorCount, subscribeToVisitorCount } from './visitorCounter';
-import { getDoc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
+import { getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
