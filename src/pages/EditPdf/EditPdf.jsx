@@ -16,15 +16,17 @@ import { FREE_LIMITS, mbToBytes } from "../../config/limits";
 // ── constants ────────────────────────────────────────────────────────────────
 const RENDER_SCALE = 1.5;
 const ANN_TOOLS = [
-  { id: "draw",      label: "Draw"      },
-  { id: "text",      label: "Text"      },
-  { id: "highlight", label: "Highlight" },
-  { id: "rect",      label: "Rectangle" },
-  { id: "eraser",    label: "Eraser"    },
+  { id: "draw",      label: "Draw",      icon: Pencil },
+  { id: "text",      label: "Add Text Box",      icon: Type },
+  { id: "highlight", label: "Highlight", icon: Highlighter },
+  { id: "rect",      label: "Rectangle", icon: Square },
+  { id: "eraser",    label: "Eraser",    icon: Eraser },
 ];
 const COLORS = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#ec4899","#000000","#ffffff"];
-const HINTS  = { draw:"Click and drag freely", text:"Click to place a text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
+const HINTS  = { draw:"Click and drag freely", text:"Click anywhere on the page to place a new text box", highlight:"Drag to highlight an area", rect:"Drag to draw a rectangle", eraser:"Click any annotation to remove it" };
 const CURSOR = { draw:"crosshair", text:"text", highlight:"crosshair", rect:"crosshair", eraser:"cell" };
+const TEXTBOX_PADDING_X = 4;
+const TEXTBOX_PADDING_Y = 2;
 
 // ── canvas helpers ────────────────────────────────────────────────────────────
 function drawAnn(ctx, ann) {
@@ -48,9 +50,7 @@ function drawAnn(ctx, ann) {
       ctx.strokeRect(x, y, Math.abs((ann.x2??ann.x)-ann.x), Math.abs((ann.y2??ann.y)-ann.y)); break;
     }
     case "text":
-      ctx.globalAlpha = ann.opacity ?? 1;
-      ctx.font = `${ann.fontSize??18}px sans-serif`;
-      ctx.fillText(ann.text, ann.x, ann.y); break;
+      break;
   }
   ctx.restore();
 }
@@ -59,11 +59,14 @@ function hitTest(ann, x, y) {
   const R = Math.max(10, (ann.strokeWidth??2)*3);
   switch (ann.type) {
     case "draw": return ann.points?.some(p => Math.hypot(p.x-x, p.y-y) < R);
-    case "text": { const fs = ann.fontSize??18; return x>=ann.x-4 && x<=ann.x+ann.text.length*fs*0.6 && y>=ann.y-fs && y<=ann.y+4; }
+    case "text": { const fs = ann.fontSize??18; return x>=ann.x-4 && x<=ann.x+ann.text.length*fs*0.6 && y>=ann.y-4 && y<=ann.y+fs+4; }
     default: return x>=Math.min(ann.x,ann.x2??ann.x)-4&&x<=Math.max(ann.x,ann.x2??ann.x)+4&&y>=Math.min(ann.y,ann.y2??ann.y)-4&&y<=Math.max(ann.y,ann.y2??ann.y)+4;
   }
 }
 function getPos(e, el) { const r = el.getBoundingClientRect(); return { x: e.clientX-r.left, y: e.clientY-r.top }; }
+function isFormTarget(target) {
+  return target instanceof HTMLElement && ["TEXTAREA", "INPUT", "BUTTON"].includes(target.tagName);
+}
 
 // ── component ─────────────────────────────────────────────────────────────────
 export function EditPdf() {
@@ -93,6 +96,8 @@ export function EditPdf() {
 
   const canvasRefs = useRef({});
   const drawing    = useRef(null);
+  const draggingText = useRef(null);
+  const skipTextPlacement = useRef(false);
 
   const { isPremium, isWalletConnected: isConn, hasReachedGlobalLimit, incrementUsage } = useSubscription();
   const LIMIT_MB   = FREE_LIMITS.editPdf.maxFileSizeMb;
@@ -169,15 +174,45 @@ export function EditPdf() {
     });
 
     // ── 2. Draw annotation strokes on top ────────────────────────────────────
-    annotations.filter(a => a.pageIndex === pi).forEach(a => drawAnn(ctx, a));
+    annotations.filter(a => a.pageIndex === pi && a.type !== "text").forEach(a => drawAnn(ctx, a));
     if (inProgress) drawAnn(ctx, inProgress);
   }
 
   // ── annotation mouse handlers ────────────────────────────────────────────────
+  function openTextBox(pi, pos) {
+    setTextBox({
+      pageIndex: pi,
+      x: Math.max(8, pos.x),
+      y: Math.max(8, pos.y),
+      value: "",
+    });
+  }
+  function removeAnnotation(id) {
+    setAnnotations(prev => prev.filter(ann => ann.id !== id));
+  }
+  function startTextDrag(e, ann) {
+    if (mode !== "annotate") return;
+    if (tool === "eraser") {
+      e.stopPropagation();
+      removeAnnotation(ann.id);
+      return;
+    }
+    if (tool !== "text") return;
+    const pos = getPos(e, canvasRefs.current[ann.pageIndex]);
+    draggingText.current = {
+      id: ann.id,
+      pageIndex: ann.pageIndex,
+      offsetX: pos.x - ann.x,
+      offsetY: pos.y - ann.y,
+    };
+    skipTextPlacement.current = true;
+    e.stopPropagation();
+  }
+
   function onMouseDown(e, pi) {
     if (mode !== "annotate") return;
     const pos = getPos(e, canvasRefs.current[pi]);
-    if (tool === "text") { setTextBox({ pageIndex: pi, x: pos.x, y: pos.y, value: "" }); return; }
+    if (tool === "text") return;
     if (tool === "eraser") {
       setAnnotations(prev => {
         const idx = [...prev].reverse().findIndex(a => a.pageIndex === pi && hitTest(a, pos.x, pos.y));
@@ -186,7 +221,26 @@ export function EditPdf() {
     }
     drawing.current = { pageIndex: pi, type: tool, color, strokeWidth: stroke, opacity, x: pos.x, y: pos.y, x2: pos.x, y2: pos.y, points: [pos] };
   }
+  function onPageClick(e, pi) {
+    if (skipTextPlacement.current) {
+      skipTextPlacement.current = false;
+      return;
+    }
+    if (mode !== "annotate" || tool !== "text" || textBox || isFormTarget(e.target)) return;
+    const holder = e.currentTarget;
+    openTextBox(pi, getPos(e, holder));
+  }
   function onMouseMove(e, pi) {
+    if (draggingText.current?.pageIndex === pi) {
+      const pos = getPos(e, canvasRefs.current[pi]);
+      const { id, offsetX, offsetY } = draggingText.current;
+      setAnnotations(prev => prev.map(ann => (
+        ann.id === id
+          ? { ...ann, x: Math.max(8, pos.x - offsetX), y: Math.max(8, pos.y - offsetY) }
+          : ann
+      )));
+      return;
+    }
     if (!drawing.current || drawing.current.pageIndex !== pi) return;
     const pos = getPos(e, canvasRefs.current[pi]);
     drawing.current.x2 = pos.x; drawing.current.y2 = pos.y;
@@ -194,15 +248,35 @@ export function EditPdf() {
     redraw(pi, drawing.current);
   }
   function onMouseUp(e, pi) {
+    if (draggingText.current?.pageIndex === pi) {
+      draggingText.current = null;
+      return;
+    }
     if (!drawing.current || drawing.current.pageIndex !== pi) return;
     const d = drawing.current; drawing.current = null;
     const ok = d.type === "draw" ? d.points.length >= 2 : Math.abs(d.x2-d.x) > 3 || Math.abs(d.y2-d.y) > 3;
     if (ok) setAnnotations(prev => [...prev, { ...d, id: Date.now() }]); else redraw(pi, null);
   }
-  function commitTextBox() {
-    if (!textBox) return;
-    if (textBox.value.trim()) setAnnotations(prev => [...prev, { id: Date.now(), type: "text", pageIndex: textBox.pageIndex, x: textBox.x, y: textBox.y + fontSize, text: textBox.value, color, fontSize, opacity, strokeWidth: 1 }]);
-    setTextBox(null);
+  function commitTextBox(nextValue) {
+    setTextBox(current => {
+      if (!current) return null;
+      const value = typeof nextValue === "string" ? nextValue : current.value;
+      if (value.trim()) {
+        setAnnotations(prev => [...prev, {
+          id: Date.now(),
+          type: "text",
+          pageIndex: current.pageIndex,
+          x: current.x + TEXTBOX_PADDING_X,
+          y: current.y + TEXTBOX_PADDING_Y,
+          text: value,
+          color,
+          fontSize,
+          opacity,
+          strokeWidth: 1,
+        }]);
+      }
+      return null;
+    });
   }
 
   // ── save PDF (applies both annotations and text edits) ──────────────────────
@@ -241,7 +315,7 @@ export function EditPdf() {
           <FileEdit className="w-10 h-10" />
         </Motion.div>
         <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase">Edit PDF</h1>
-        <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">Draw, annotate, highlight — or click existing text to edit it directly in the browser.</p>
+        <p className="text-zinc-500 text-lg font-light max-w-md mx-auto">Add text boxes, draw, and annotate your PDF pages — or switch modes to edit existing text already in the file.</p>
       </div>
       {error && <div className="mb-6 p-4 bg-red-500/10 text-red-400 rounded-2xl border border-red-500/20 text-sm">{error}</div>}
       <Dropzone onFilesSelected={fs => { const f = fs[0]; if (f) { setFile(f); loadFile(f); } }} multiple={false} text="Drop a PDF to start editing" />
@@ -275,7 +349,7 @@ export function EditPdf() {
             <Pencil className="w-3 h-3" /> Annotate
           </button>
           <button onClick={() => setMode("edittext")} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${mode==="edittext"?"bg-white text-black":"text-zinc-400 hover:text-white"}`}>
-            <PenLine className="w-3 h-3" /> Edit Text
+            <PenLine className="w-3 h-3" /> Edit Existing Text
           </button>
         </div>
 
@@ -283,10 +357,10 @@ export function EditPdf() {
         {mode === "annotate" && <>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex gap-1">
-            {ANN_TOOLS.map(({ id, label }) => (
-              <button key={id} title={label} onClick={() => setTool(id)}
+            {ANN_TOOLS.map(({ id, label, icon }) => (
+              <button key={id} type="button" aria-label={label} aria-pressed={tool===id} title={label} onClick={() => setTool(id)}
                 className={`p-2 rounded-xl transition-all ${tool===id?"bg-white text-black":"text-zinc-400 hover:text-white hover:bg-white/10"}`}>
-                
+                {React.createElement(icon, { className: "w-4 h-4" })}
               </button>
             ))}
           </div>
@@ -301,6 +375,12 @@ export function EditPdf() {
               onChange={e => tool==="text"?setFontSize(+e.target.value):setStroke(+e.target.value)} className="w-16 accent-white" />
             <span className="text-xs text-zinc-300 w-5">{tool==="text"?fontSize:stroke}</span>
           </div>
+          {tool === "text" && (
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Info className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+              <span>This adds a new text box. Click on the page to place it, then drag the placed text to adjust.</span>
+            </div>
+          )}
         </>}
 
         {/* Edit text mode info */}
@@ -351,7 +431,15 @@ export function EditPdf() {
       {/* ── Page area ── */}
       <div className="flex flex-col items-center gap-10 py-10 px-4 overflow-x-auto">
         {pages.map((page, pi) => (
-          <div key={pi} className="relative shadow-2xl rounded overflow-hidden border border-white/10" style={{ width: page.width, height: page.height }}>
+          <div
+            key={pi}
+            className="relative shadow-2xl rounded overflow-hidden border border-white/10"
+            style={{ width: page.width, height: page.height }}
+            onClick={e => onPageClick(e, pi)}
+            onMouseMove={e => onMouseMove(e, pi)}
+            onMouseUp={e => onMouseUp(e, pi)}
+            onMouseLeave={e => onMouseUp(e, pi)}
+          >
 
             <div className="absolute top-2 left-2 z-10 bg-black/60 text-zinc-400 text-xs px-2 py-0.5 rounded-full pointer-events-none">
               Page {pi + 1}
@@ -369,6 +457,35 @@ export function EditPdf() {
               onMouseUp={e => onMouseUp(e, pi)}
               onMouseLeave={e => onMouseUp(e, pi)}
             />
+
+            {annotations.filter(a => a.pageIndex === pi && a.type === "text").map(ann => (
+              <div
+                key={ann.id}
+                onMouseDown={e => startTextDrag(e, ann)}
+                onClick={e => {
+                  if (mode === "annotate" && tool === "eraser") {
+                    e.stopPropagation();
+                    removeAnnotation(ann.id);
+                  }
+                }}
+                style={{
+                  position:"absolute",
+                  left:ann.x,
+                  top:ann.y,
+                  color:ann.color,
+                  fontSize:ann.fontSize,
+                  fontFamily:"sans-serif",
+                  lineHeight:1.2,
+                  whiteSpace:"pre-wrap",
+                  cursor: mode === "annotate" && tool === "text" ? "move" : mode === "annotate" && tool === "eraser" ? "cell" : "default",
+                  pointerEvents: mode === "annotate" && (tool === "text" || tool === "eraser") ? "auto" : "none",
+                  zIndex:12,
+                  userSelect:"none",
+                }}
+              >
+                {ann.text}
+              </div>
+            ))}
 
             {/* Text item overlays (Edit Text mode) */}
             {mode === "edittext" && textItems.filter(t => t.pageIndex === pi).map(item => {
@@ -413,9 +530,10 @@ export function EditPdf() {
             {textBox?.pageIndex === pi && (
               <textarea autoFocus value={textBox.value}
                 onChange={e => setTextBox(t => ({ ...t, value: e.target.value }))}
-                onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { commitTextBox(); e.preventDefault(); } if (e.key==="Escape") setTextBox(null); }}
-                onBlur={commitTextBox}
-                style={{ position:"absolute", left:textBox.x, top:textBox.y - fontSize, background:"transparent", border:"1px dashed rgba(255,255,255,0.4)", color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:"2px 4px", minWidth:80, minHeight:fontSize+8 }}
+                onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { commitTextBox(e.currentTarget.value); e.preventDefault(); } if (e.key==="Escape") setTextBox(null); }}
+                onBlur={e => commitTextBox(e.currentTarget.value)}
+                placeholder="Type text and press Enter"
+                style={{ position:"absolute", left:textBox.x, top:textBox.y, background:"rgba(0,0,0,0.82)", border:"1px dashed rgba(255,255,255,0.4)", color, caretColor: color, fontSize, fontFamily:"sans-serif", lineHeight:1.2, outline:"none", resize:"none", padding:`${TEXTBOX_PADDING_Y}px ${TEXTBOX_PADDING_X}px`, minWidth:80, minHeight:fontSize + TEXTBOX_PADDING_Y * 2 + 4, zIndex:15 }}
               />
             )}
           </div>

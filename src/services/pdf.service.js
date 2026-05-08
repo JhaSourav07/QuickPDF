@@ -492,7 +492,7 @@ export const applyEdits = async (file, annotations, pages) => {
       case "text": {
         const ptSize = (ann.fontSize ?? 18) * sx;
         pdfPage.drawText(ann.text, {
-          x: toX(ann.x), y: toY(ann.y),
+          x: toX(ann.x), y: toY(ann.y + (ann.fontSize ?? 18)),
           size: Math.max(4, ptSize), font, color: clr, opacity: ann.opacity ?? 1,
         });
         break;
