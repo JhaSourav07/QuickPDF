@@ -27,6 +27,10 @@ export function Watermark() {
     offsetY: 0
   });
 
+  const [watermarkMode, setWatermarkMode] = useState("text");
+  const [watermarkImage, setWatermarkImage] = useState(null);
+  const [watermarkImagePreview, setWatermarkImagePreview] = useState(null);
+
   const {
     isPremium,
     hasReachedGlobalLimit,
@@ -51,15 +55,14 @@ export function Watermark() {
   }, [file]);
 
   useEffect(() => {
-    if (!file || !watermarkText.trim()) {
-      const t = setTimeout(() => setPreviewUrl(null), 0);
-      return () => clearTimeout(t);
-    }
-
     const timer = setTimeout(async () => {
+      if (!file) { setPreviewUrl(null); return; }
+      if (watermarkMode === "text" && !watermarkText.trim()) { setPreviewUrl(null); return; }
+      if (watermarkMode === "image" && !watermarkImage) { setPreviewUrl(null); return; }
+
       try {
         setIsProcessing(true);
-        const blob = await addWatermark(file, watermarkText, options);
+        const blob = await addWatermark(file, watermarkText, options, watermarkMode === "image" ? watermarkImage : null);
         const url = URL.createObjectURL(blob);
 
         if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
@@ -73,7 +76,7 @@ export function Watermark() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [file, watermarkText, options]);
+  }, [file, watermarkText, options, watermarkMode, watermarkImage]);
 
   // 3. Handle cleanup on unmount
   useEffect(() => {
@@ -111,6 +114,8 @@ export function Watermark() {
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
     setPageCount(0);
+    setWatermarkImage(null);
+    setWatermarkImagePreview(null);
   };
 
   const updateOption = (key, value) => {
@@ -159,13 +164,73 @@ export function Watermark() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-zinc-400">Watermark Text</label>
-                <input
-                  type="text"
-                  value={watermarkText}
-                  onChange={(e) => setWatermarkText(e.target.value)}
-                  className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg uppercase outline-none focus:ring-1 focus:ring-white/20"
-                />
+                <label className="block text-sm font-medium text-zinc-400">Watermark Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["text", "image"].map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => {
+                        setWatermarkMode(mode);
+                        updateOption("rotation", mode === "text" ? 45 : 0);
+                      }}
+                      className={`h-9 rounded-lg text-sm font-medium capitalize transition-all ${
+                        watermarkMode === mode
+                          ? "bg-white text-black"
+                          : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      {mode === "text" ? "Text" : "Image"}
+                    </button>
+                  ))}
+                </div>
+                {watermarkMode === "text" && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-zinc-400">Watermark Text</label>
+                    <input
+                      type="text"
+                      value={watermarkText}
+                      onChange={(e) => setWatermarkText(e.target.value)}
+                      className="w-full h-11 px-4 bg-black border border-white/10 text-white rounded-lg uppercase outline-none focus:ring-1 focus:ring-white/20"
+                    />
+                  </div>
+                )}
+                {watermarkMode === "image" && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-zinc-400">Watermark Image</label>
+                    {!watermarkImage ? (
+                      <Dropzone
+                        onFilesSelected={(files) => {
+                          const f = files[0];
+                          if (!f) return;
+                          setWatermarkImage(f);
+                          setWatermarkImagePreview(URL.createObjectURL(f));
+                        }}
+                        multiple={false}
+                        text="Click or drop a PNG / JPG"
+                        accept="image/png, image/jpeg, image/jpg"
+                        hintText="PNG, JPG only"
+                      />
+                    ) : (
+                      <div className="relative flex items-center gap-3 p-3 bg-zinc-900/50 border border-white/10 rounded-xl">
+                        <img
+                          src={watermarkImagePreview}
+                          alt="Watermark preview"
+                          className="w-12 h-12 object-contain rounded-lg bg-zinc-800"
+                        />
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-sm text-zinc-200 truncate">{watermarkImage.name}</p>
+                          <p className="text-xs text-zinc-500">{(watermarkImage.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                        <button
+                          onClick={() => { setWatermarkImage(null); setWatermarkImagePreview(null); }}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6 pt-6 border-t border-white/10">
@@ -190,10 +255,21 @@ export function Watermark() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-zinc-500 uppercase">Size: {options.fontSize}px</label>
-                    <input type="range" min="10" max="200" value={options.fontSize} onChange={(e) => updateOption("fontSize", parseInt(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
-                  </div>
+                  {watermarkMode === "text" && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-zinc-500 uppercase">Size: {options.fontSize}px</label>
+                      <input type="range" min="10" max="200" value={options.fontSize} onChange={(e) => updateOption("fontSize", parseInt(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
+                    </div>
+                  )}
+                  {watermarkMode === "image" && (
+                    <div className="space-y-2">
+                      <label className="text-xs text-zinc-500 uppercase">Scale: {Math.round((options.imageScale ?? 0.4) * 100)}%</label>
+                      <input type="range" min="0.05" max="0.9" step="0.05"
+                        value={options.imageScale ?? 0.4}
+                        onChange={(e) => updateOption("imageScale", parseFloat(e.target.value))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-xs text-zinc-500 uppercase">Opacity: {Math.round(options.opacity * 100)}%</label>
                     <input type="range" min="0.05" max="1" step="0.05" value={options.opacity} onChange={(e) => updateOption("opacity", parseFloat(e.target.value))} className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white" />

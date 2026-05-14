@@ -62,7 +62,31 @@ export const getPdfPageCount = async (file) => {
   return pdf.getPageCount();
 };
 
-export const addWatermark = async (file, watermarkText = "CONFIDENTIAL", options = {}) => {
+// Rotates an Image bytes before embedding
+async function rotateImageBytes(imageFile, angleDeg) {
+  const bitmap = await createImageBitmap(imageFile);
+  const rad = (angleDeg * Math.PI) / 180;
+  const sin = Math.abs(Math.sin(rad));
+  const cos = Math.abs(Math.cos(rad));
+
+  const canvasW = Math.round(bitmap.width * cos + bitmap.height * sin);
+  const canvasH = Math.round(bitmap.width * sin + bitmap.height * cos);
+
+  const canvas = document.createElement("canvas");
+  canvas.width  = canvasW;
+  canvas.height = canvasH;
+
+  const ctx = canvas.getContext("2d");
+  ctx.translate(canvasW / 2, canvasH / 2);
+  ctx.rotate(rad);
+  ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+
+  const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+  const bytes = await blob.arrayBuffer();
+  return { bytes, width: canvasW, height: canvasH };
+}
+
+export const addWatermark = async (file, watermarkText = "CONFIDENTIAL", options = {}, watermarkImage = null) => {
   if (!file) throw new Error("Please provide a PDF file.");
 
   const {
@@ -72,12 +96,67 @@ export const addWatermark = async (file, watermarkText = "CONFIDENTIAL", options
     rotation = 45,
     offsetX = 0,
     offsetY = 0,
+    imageScale = 0.4,
   } = options;
 
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const pages = pdfDoc.getPages();
+
+  if (watermarkImage) {
+    let embeddedImage, imgW, imgH;
+
+    if (rotation !== 0) {
+      const { bytes, width, height } = await rotateImageBytes(watermarkImage, rotation);
+      embeddedImage = await pdfDoc.embedPng(bytes);
+      imgW = width;
+      imgH = height;
+    } else {
+      const imgBytes = await watermarkImage.arrayBuffer();
+      embeddedImage = watermarkImage.type === "image/png"
+        ? await pdfDoc.embedPng(imgBytes)
+        : await pdfDoc.embedJpg(imgBytes);
+      const size = embeddedImage.size();
+      imgW = size.width;
+      imgH = size.height;
+    }
+      
+      pages.forEach((page) => {
+        const { width: pageW, height: pageH } = page.getSize();
+        const targetW = pageW * imageScale;
+        const scale   = targetW / imgW;
+        const targetH = imgH * scale;
+
+        const margin = 40;
+        let x, y;
+
+        switch (position) {
+          case "top-left":
+            x = margin; y = pageH - margin - targetH; break;
+          case "top-right":
+            x = pageW - margin - targetW; y = pageH - margin - targetH; break;
+          case "bottom-left":
+            x = margin; y = margin; break;
+          case "bottom-right":
+            x = pageW - margin - targetW; y = margin; break;
+          case "center":
+          default:
+            x = (pageW - targetW) / 2;
+            y = (pageH - targetH) / 2;
+            break;
+        }
+
+        page.drawImage(embeddedImage, {
+          x: x + Number(offsetX),
+          y: y + Number(offsetY),
+          width: targetW,
+          height: targetH,
+          opacity: parseFloat(opacity),
+        })
+      })
+
+  } else {
 
   pages.forEach((page) => {
     const { width, height } = page.getSize();
@@ -124,6 +203,7 @@ export const addWatermark = async (file, watermarkText = "CONFIDENTIAL", options
       rotate: degrees(rotation),
     });
   });
+  }
 
   const pdfBytes = await pdfDoc.save();
   return new Blob([pdfBytes], { type: "application/pdf" });
