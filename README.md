@@ -5,7 +5,7 @@
 
 > PDF tools that respect your privacy — merge and split documents entirely in the browser.
 
-</div>
+
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
@@ -17,7 +17,7 @@
 [![CI Pipeline](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml/badge.svg)](https://github.com/jhasourav07/quickpdf/actions/workflows/ci.yml)
 
 **[🚀 Try the Live Demo Here](https://quickpdff.vercel.app/)**
-
+</div>
 ---
 
 Every major PDF tool — Smallpdf, ILovePDF, Adobe Acrobat Online — routes your files through a remote server. You upload a confidential contract, a financial statement, a medical record — and it passes through infrastructure you don't control.
@@ -141,8 +141,52 @@ QuickPDF uses [`pdf-lib`](https://pdf-lib.js.org/) — a pure JavaScript library
 - [ ] Add Page Numbers — Auto-stamp sequential numbers on footers
 - [ ] Extract Text (OCR) — Pull readable text directly to clipboard
 - [ ] Protect/Unlock PDF — Add or remove passwords locally
-- [ ] Edit Pdf - Edit pdf locally on your browser
+- [ ] Edit PDF - Edit PDF locally on your browser
 
+---
+## 🧪 Use Cases
+
+- Invoice generation  
+- Automated reports  
+- Web page archiving  
+- Email attachments  
+- Competitor monitoring  
+- Compliance documentation  
+
+---
+
+## 🏗️ System Architecture
+
+Client → API Gateway → Headless Chrome Renderer → PDF Generator → Response  
+
+---
+
+## 📈 Performance
+
+- Fast Chrome-based rendering  
+- Batch processing support  
+- Stateless architecture  
+- Designed for production-scale workloads  
+
+---
+
+## 🔐 Security
+
+- API key authentication  
+- Rate limiting  
+- SSRF protection  
+- Isolated execution environment  
+- HTTPS enforced  
+
+---
+
+## 📊 Comparison
+
+| Tool | Limitation | QuickPDF Advantage |
+|------|-----------|--------------------|
+| Puppeteer | Complex setup | API-first simplicity |
+| wkhtmltopdf | Outdated rendering | Modern Chrome engine |
+| Custom scripts | Hard to scale | Fully managed service |
 ---
 
 ## Contributing
@@ -164,6 +208,13 @@ QuickPDF is architected so that a breach of the application itself **cannot expo
 If you discover a vulnerability, please open a [GitHub Security Advisory](https://github.com/jhasourav07/quickpdf/security/advisories/new) rather than a public issue.
 
 ---
+## Philosophy
+
+QuickPDF is built as production-grade rendering infrastructure focused on:
+
+- Reliability
+- Scalability
+- Developer experience
 
 ## License
 
